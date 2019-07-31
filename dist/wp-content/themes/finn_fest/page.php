@@ -6,8 +6,7 @@ while (have_posts()) :
 
     ?>
     <div class="section__container">
-        <?php get_component('components/content/single-page.php', []); ?>
-        <?= get_the_content() ?>
+        <?php get_component('components/single-page.php', []); ?>
     </div>
 <?php
 endwhile;

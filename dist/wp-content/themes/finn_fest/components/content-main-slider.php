@@ -9,7 +9,7 @@ $template_path = get_template_directory_uri();
         <?php
         foreach($slides as $item) {
             ?>
-            <div class="slider-banner__item slider-banner__item-0" style="background: url('<?= $item['slide'] ?>');"></div>
+            <div class="slider-banner__item slider-banner__item-0" style="background: url('<?= $item['slide'] ?>') center no-repeat; background-size: cover;"></div>
         <?php } ?>
     </div>
     

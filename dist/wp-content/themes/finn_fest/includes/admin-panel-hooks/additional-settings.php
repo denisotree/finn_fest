@@ -75,6 +75,16 @@ function additional_settings()
     );
 
     register_setting('general', 'footer_banner_text');
+
+    add_settings_field(
+        'order_form_shortcode',
+        'Шорткод формы заказа билета',
+        'order_form_shortcode_field',
+        'general',
+        'over_options'
+    );
+
+    register_setting('general', 'order_form_shortcode');
 }
 
 function over_option_description()
@@ -128,6 +138,16 @@ function vk_fest_page_id_field()
     name="vk_fest_page_id"  
     type="text" 
     value="' . get_option('vk_fest_page_id') . '" 
+    class="code2"
+    />';
+}
+
+function order_form_shortcode_field()
+{
+    echo '<input 
+    name="order_form_shortcode"  
+    type="text" 
+    value="' . get_option('order_form_shortcode') . '" 
     class="code2"
     />';
 }

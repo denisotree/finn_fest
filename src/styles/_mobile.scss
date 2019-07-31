@@ -128,7 +128,8 @@
 	}
 
 	.container-fluid__contacts {
-		padding: 0 40px
+		padding: 0 40px;
+		margin-bottom: 0;
 	}
 
 	.contacts__info {
@@ -301,61 +302,6 @@
 		height: 100%
 	}
 
-	.modal-tiket {
-		width: 380px;
-		height: 568px;
-		top: -65px;
-		right: 0;
-		bottom: 0;
-		left: -80px;
-		display: block;
-		padding-left: 0
-	}
-
-	.modal-tiket .modal-content {
-		width: 300px;
-		height: 480px
-	}
-
-	.modal-content__buy-ticket {
-		width: 337px;
-		height: 620px;
-		margin: 0 auto
-	}
-
-	.modal-tiket .modal-header {
-		width: 275px;
-		height: 450px;
-		display: -webkit-box;
-		display: -ms-flexbox;
-		display: -webkit-flex;
-		display: flex;
-		-webkit-box-orient: vertical;
-		-webkit-box-direction: normal;
-		-ms-flex-direction: column;
-		-webkit-flex-direction: column;
-		flex-direction: column;
-		-webkit-box-pack: center;
-		-ms-flex-pack: center;
-		-webkit-justify-content: center;
-		justify-content: center
-	}
-
-	.modal-dialog {
-		position: relative;
-		left: 1%;
-		top: 0;
-		width: -moz-max-content;
-		width: -webkit-max-content;
-		width: max-content
-	}
-
-	.modal-header .btn-modal-close {
-		position: absolute;
-		top: 1%;
-		right: 1%
-	}
-
 	.modal-header .modal-header__menu-list {
 		list-style-type: none;
 		display: -webkit-box;
@@ -423,53 +369,7 @@
 		margin-top: 100px
 	}
 
-	.modal-body__form .order-form {
-		-ms-flex-wrap: wrap;
-		-webkit-flex-wrap: wrap;
-		flex-wrap: wrap;
-		-webkit-justify-content: space-around;
-		-ms-flex-pack: distribute;
-		justify-content: space-around;
-		-webkit-box-orient: horizontal;
-		-webkit-box-direction: normal;
-		-ms-flex-direction: row;
-		-webkit-flex-direction: row;
-		flex-direction: row;
-		width: 200px;
-		-webkit-box-align: center;
-		-ms-flex-align: center;
-		-webkit-align-items: center;
-		align-items: center;
-		margin: 0 auto;
-		height: 230px
-	}
 
-	.order-form input {
-		width: 200px;
-		height: 45px;
-		font-size: 16px;
-		margin-bottom: 5px
-	}
-
-	.order-form .submit-form {
-		height: 50px
-	}
-
-	.order-form .submit-form span:first-child {
-		padding-left: 25px;
-		margin: 0
-	}
-
-	.order-form .submit-form span:last-child {
-		padding-right: 25px;
-		-webkit-transition: padding-right .3s linear;
-		-o-transition: padding-right .3s linear;
-		transition: padding-right .3s linear
-	}
-
-	.order-form .submit-form:hover span:last-child {
-		padding-right: 15px
-	}
 }
 
 @media only screen and (min-width: 200px) and (max-width: 340px) {

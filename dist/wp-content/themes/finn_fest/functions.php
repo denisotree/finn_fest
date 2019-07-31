@@ -86,5 +86,3 @@ require_once __DIR__ . '/includes/tools/get_phone_link.php';
 
 require_once __DIR__ . '/includes/tools/get_host_from_link.php';
 
-
-

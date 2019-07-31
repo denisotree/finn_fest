@@ -40,6 +40,8 @@
 
 	get_component('components/footer-copyright.php', []);
 
+	get_component('components/footer-modal-form.php', [])
+
 	?>
 </div>
 </footer>
