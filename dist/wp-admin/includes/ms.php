@@ -249,7 +249,15 @@ function display_space_usage() {
 
 	$percent_used = ( $space_used / $space_allowed ) * 100;
 
-	$space = size_format( $space_allowed * MB_IN_BYTES );
+	if ( $space_allowed > 1000 ) {
+		$space = number_format( $space_allowed / KB_IN_BYTES );
+		/* translators: Gigabytes */
+		$space .= __( 'GB' );
+	} else {
+		$space = number_format( $space_allowed );
+		/* translators: Megabytes */
+		$space .= __( 'MB' );
+	}
 	?>
 	<strong>
 	<?php
@@ -367,8 +375,7 @@ function update_user_status( $id, $pref, $value, $deprecated = null ) {
 function refresh_user_details( $id ) {
 	$id = (int) $id;
 
-	$user = get_userdata( $id );
-	if ( ! $user ) {
+	if ( ! $user = get_userdata( $id ) ) {
 		return false;
 	}
 
@@ -795,7 +802,7 @@ function avoid_blog_page_permalink_collision( $data, $postarr ) {
  */
 function choose_primary_blog() {
 	?>
-	<table class="form-table" role="presentation">
+	<table class="form-table">
 	<tr>
 	<?php /* translators: My sites label */ ?>
 		<th scope="row"><label for="primary_blog"><?php _e( 'Primary Site' ); ?></label></th>
@@ -907,10 +914,9 @@ function confirm_delete_users( $users ) {
 	$site_admins = get_super_admins();
 	$admin_out   = '<option value="' . esc_attr( $current_user->ID ) . '">' . $current_user->user_login . '</option>';
 	?>
-	<table class="form-table" role="presentation">
+	<table class="form-table">
 	<?php
-	$allusers = (array) $_POST['allusers'];
-	foreach ( $allusers as $user_id ) {
+	foreach ( ( $allusers = (array) $_POST['allusers'] ) as $user_id ) {
 		if ( $user_id != '' && $user_id != '0' ) {
 			$delete_user = get_userdata( $user_id );
 
@@ -978,7 +984,7 @@ function confirm_delete_users( $users ) {
 				echo '</fieldset></td></tr>';
 			} else {
 				?>
-				<td><p><?php _e( 'User has no sites or content and will be deleted.' ); ?></p></td>
+				<td><fieldset><p><legend><?php _e( 'User has no sites or content and will be deleted.' ); ?></legend></p>
 			<?php } ?>
 			</tr>
 			<?php
@@ -1089,7 +1095,7 @@ function network_edit_site_nav( $args = array() ) {
 	);
 
 	// Parse arguments
-	$parsed_args = wp_parse_args(
+	$r = wp_parse_args(
 		$args,
 		array(
 			'blog_id'  => isset( $_GET['blog_id'] ) ? (int) $_GET['blog_id'] : 0,
@@ -1102,10 +1108,10 @@ function network_edit_site_nav( $args = array() ) {
 	$screen_links = array();
 
 	// Loop through tabs
-	foreach ( $parsed_args['links'] as $link_id => $link ) {
+	foreach ( $r['links'] as $link_id => $link ) {
 
 		// Skip link if user can't access
-		if ( ! current_user_can( $link['cap'], $parsed_args['blog_id'] ) ) {
+		if ( ! current_user_can( $link['cap'], $r['blog_id'] ) ) {
 			continue;
 		}
 
@@ -1116,7 +1122,7 @@ function network_edit_site_nav( $args = array() ) {
 		$aria_current = '';
 
 		// Selected is set by the parent OR assumed by the $pagenow global
-		if ( $parsed_args['selected'] === $link_id || $link['url'] === $GLOBALS['pagenow'] ) {
+		if ( $r['selected'] === $link_id || $link['url'] === $GLOBALS['pagenow'] ) {
 			$classes[]    = 'nav-tab-active';
 			$aria_current = ' aria-current="page"';
 		}
@@ -1125,7 +1131,7 @@ function network_edit_site_nav( $args = array() ) {
 		$esc_classes = implode( ' ', $classes );
 
 		// Get the URL for this link
-		$url = add_query_arg( array( 'id' => $parsed_args['blog_id'] ), network_admin_url( $link['url'] ) );
+		$url = add_query_arg( array( 'id' => $r['blog_id'] ), network_admin_url( $link['url'] ) );
 
 		// Add link to nav links
 		$screen_links[ $link_id ] = '<a href="' . esc_url( $url ) . '" id="' . esc_attr( $link_id ) . '" class="' . $esc_classes . '"' . $aria_current . '>' . esc_html( $link['label'] ) . '</a>';
@@ -1166,6 +1172,6 @@ function get_site_screen_help_tab_args() {
  */
 function get_site_screen_help_sidebar_content() {
 	return '<p><strong>' . __( 'For more information:' ) . '</strong></p>' .
-		'<p>' . __( '<a href="https://wordpress.org/support/article/network-admin-sites-screen/">Documentation on Site Management</a>' ) . '</p>' .
+		'<p>' . __( '<a href="https://codex.wordpress.org/Network_Admin_Sites_Screen">Documentation on Site Management</a>' ) . '</p>' .
 		'<p>' . __( '<a href="https://wordpress.org/support/forum/multisite/">Support Forums</a>' ) . '</p>';
 }

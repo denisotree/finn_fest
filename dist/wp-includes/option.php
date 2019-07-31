@@ -198,9 +198,8 @@ function wp_load_alloptions() {
 	}
 
 	if ( ! $alloptions ) {
-		$suppress      = $wpdb->suppress_errors();
-		$alloptions_db = $wpdb->get_results( "SELECT option_name, option_value FROM $wpdb->options WHERE autoload = 'yes'" );
-		if ( ! $alloptions_db ) {
+		$suppress = $wpdb->suppress_errors();
+		if ( ! $alloptions_db = $wpdb->get_results( "SELECT option_name, option_value FROM $wpdb->options WHERE autoload = 'yes'" ) ) {
 			$alloptions_db = $wpdb->get_results( "SELECT option_name, option_value FROM $wpdb->options" );
 		}
 		$wpdb->suppress_errors( $suppress );
@@ -914,8 +913,7 @@ function wp_user_settings() {
 		return;
 	}
 
-	$user_id = get_current_user_id();
-	if ( ! $user_id ) {
+	if ( ! $user_id = get_current_user_id() ) {
 		return;
 	}
 
@@ -1037,8 +1035,7 @@ function delete_user_setting( $names ) {
 function get_all_user_settings() {
 	global $_updated_user_settings;
 
-	$user_id = get_current_user_id();
-	if ( ! $user_id ) {
+	if ( ! $user_id = get_current_user_id() ) {
 		return array();
 	}
 
@@ -1081,8 +1078,7 @@ function get_all_user_settings() {
 function wp_set_all_user_settings( $user_settings ) {
 	global $_updated_user_settings;
 
-	$user_id = get_current_user_id();
-	if ( ! $user_id ) {
+	if ( ! $user_id = get_current_user_id() ) {
 		return false;
 	}
 
@@ -1115,8 +1111,7 @@ function wp_set_all_user_settings( $user_settings ) {
  * @since 2.7.0
  */
 function delete_all_user_settings() {
-	$user_id = get_current_user_id();
-	if ( ! $user_id ) {
+	if ( ! $user_id = get_current_user_id() ) {
 		return;
 	}
 
@@ -2069,7 +2064,7 @@ function register_initial_settings() {
 				),
 			),
 			'type'         => 'string',
-			'description'  => __( 'Allow people to submit comments on new posts.' ),
+			'description'  => __( 'Allow people to post comments on new articles.' ),
 		)
 	);
 }

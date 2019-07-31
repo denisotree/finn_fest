@@ -25,8 +25,7 @@ function get_comment_author( $comment_ID = 0 ) {
 	$comment = get_comment( $comment_ID );
 
 	if ( empty( $comment->comment_author ) ) {
-		$user = $comment->user_id ? get_userdata( $comment->user_id ) : false;
-		if ( $user ) {
+		if ( $comment->user_id && $user = get_userdata( $comment->user_id ) ) {
 			$author = $user->display_name;
 		} else {
 			$author = __( 'Anonymous' );
@@ -149,8 +148,7 @@ function comment_author_email( $comment_ID = 0 ) {
  * @param int|WP_Comment $comment  Optional. Comment ID or WP_Comment object. Default is the current comment.
  */
 function comment_author_email_link( $linktext = '', $before = '', $after = '', $comment = null ) {
-	$link = get_comment_author_email_link( $linktext, $before, $after, $comment );
-	if ( $link ) {
+	if ( $link = get_comment_author_email_link( $linktext, $before, $after, $comment ) ) {
 		echo $link;
 	}
 }
@@ -264,7 +262,7 @@ function comment_author_link( $comment_ID = 0 ) {
  *                                   Default current comment.
  * @return string Comment author's IP address.
  */
-function get_comment_author_IP( $comment_ID = 0 ) { // phpcs:ignore WordPress.NamingConventions.ValidFunctionName.FunctionNameInvalid
+function get_comment_author_IP( $comment_ID = 0 ) {
 	$comment = get_comment( $comment_ID );
 
 	/**
@@ -277,7 +275,7 @@ function get_comment_author_IP( $comment_ID = 0 ) { // phpcs:ignore WordPress.Na
 	 * @param int        $comment_ID        The comment ID.
 	 * @param WP_Comment $comment           The comment object.
 	 */
-	return apply_filters( 'get_comment_author_IP', $comment->comment_author_IP, $comment->comment_ID, $comment );  // phpcs:ignore WordPress.NamingConventions.ValidHookName.NotLowercase
+	return apply_filters( 'get_comment_author_IP', $comment->comment_author_IP, $comment->comment_ID, $comment );
 }
 
 /**
@@ -289,7 +287,7 @@ function get_comment_author_IP( $comment_ID = 0 ) { // phpcs:ignore WordPress.Na
  * @param int|WP_Comment $comment_ID Optional. WP_Comment or the ID of the comment for which to print the author's IP address.
  *                                   Default current comment.
  */
-function comment_author_IP( $comment_ID = 0 ) { // phpcs:ignore WordPress.NamingConventions.ValidFunctionName.FunctionNameInvalid
+function comment_author_IP( $comment_ID = 0 ) {
 	echo esc_html( get_comment_author_IP( $comment_ID ) );
 }
 
@@ -425,7 +423,7 @@ function comment_author_url_link( $linktext = '', $before = '', $after = '', $co
  *                                 Default empty.
  * @param int|WP_Comment $comment  Comment ID or WP_Comment object. Default current comment.
  * @param int|WP_Post    $post_id  Post ID or WP_Post object. Default current post.
- * @param bool           $echo     Optional. Whether to echo or return the output.
+ * @param bool           $echo     Optional. Whether to cho or return the output.
  *                                 Default true.
  * @return string If `$echo` is false, the class will be returned. Void otherwise.
  */
@@ -468,13 +466,11 @@ function get_comment_class( $class = '', $comment_id = null, $post_id = null ) {
 	$classes[] = ( empty( $comment->comment_type ) ) ? 'comment' : $comment->comment_type;
 
 	// Add classes for comment authors that are registered users.
-	$user = $comment->user_id ? get_userdata( $comment->user_id ) : false;
-	if ( $user ) {
+	if ( $comment->user_id > 0 && $user = get_userdata( $comment->user_id ) ) {
 		$classes[] = 'byuser';
 		$classes[] = 'comment-author-' . sanitize_html_class( $user->user_nicename, $comment->user_id );
 		// For comment authors who are the author of the post
-		$post = get_post( $post_id );
-		if ( $post ) {
+		if ( $post = get_post( $post_id ) ) {
 			if ( $comment->user_id === $post->post_author ) {
 				$classes[] = 'bypostauthor';
 			}
@@ -581,35 +577,42 @@ function comment_date( $d = '', $comment_ID = 0 ) {
 }
 
 /**
- * Retrieves the excerpt of the given comment.
+ * Retrieve the excerpt of the current comment.
  *
- * Returns a maximum of 20 words with an ellipsis appended if necessary.
+ * Will cut each word and only output the first 20 words with '&hellip;' at the end.
+ * If the word count is less than 20, then no truncating is done and no '&hellip;'
+ * will appear.
  *
  * @since 1.5.0
  * @since 4.4.0 Added the ability for `$comment_ID` to also accept a WP_Comment object.
  *
  * @param int|WP_Comment $comment_ID  WP_Comment or ID of the comment for which to get the excerpt.
  *                                    Default current comment.
- * @return string The possibly truncated comment excerpt.
+ * @return string The maybe truncated comment with 20 words or less.
  */
 function get_comment_excerpt( $comment_ID = 0 ) {
 	$comment      = get_comment( $comment_ID );
 	$comment_text = strip_tags( str_replace( array( "\n", "\r" ), ' ', $comment->comment_content ) );
-
-	/* translators: Maximum number of words used in a comment excerpt. */
-	$comment_excerpt_length = intval( _x( '20', 'comment_excerpt_length' ) );
+	$words        = explode( ' ', $comment_text );
 
 	/**
-	 * Filters the maximum number of words used in the comment excerpt.
+	 * Filters the amount of words used in the comment excerpt.
 	 *
 	 * @since 4.4.0
 	 *
 	 * @param int $comment_excerpt_length The amount of words you want to display in the comment excerpt.
 	 */
-	$comment_excerpt_length = apply_filters( 'comment_excerpt_length', $comment_excerpt_length );
+	$comment_excerpt_length = apply_filters( 'comment_excerpt_length', 20 );
 
-	$excerpt = wp_trim_words( $comment_text, $comment_excerpt_length, '&hellip;' );
+	$use_ellipsis = count( $words ) > $comment_excerpt_length;
+	if ( $use_ellipsis ) {
+		$words = array_slice( $words, 0, $comment_excerpt_length );
+	}
 
+	$excerpt = trim( join( ' ', $words ) );
+	if ( $use_ellipsis ) {
+		$excerpt .= '&hellip;';
+	}
 	/**
 	 * Filters the retrieved comment excerpt.
 	 *
@@ -655,7 +658,7 @@ function comment_excerpt( $comment_ID = 0 ) {
  *
  * @return int The comment ID.
  */
-function get_comment_ID() { // phpcs:ignore WordPress.NamingConventions.ValidFunctionName.FunctionNameInvalid
+function get_comment_ID() {
 	$comment = get_comment();
 
 	/**
@@ -667,7 +670,7 @@ function get_comment_ID() { // phpcs:ignore WordPress.NamingConventions.ValidFun
 	 * @param int        $comment_ID The current comment ID.
 	 * @param WP_Comment $comment    The comment object.
 	 */
-	return apply_filters( 'get_comment_ID', $comment->comment_ID, $comment );  // phpcs:ignore WordPress.NamingConventions.ValidHookName.NotLowercase
+	return apply_filters( 'get_comment_ID', $comment->comment_ID, $comment );
 }
 
 /**
@@ -675,7 +678,7 @@ function get_comment_ID() { // phpcs:ignore WordPress.NamingConventions.ValidFun
  *
  * @since 0.71
  */
-function comment_ID() { // phpcs:ignore WordPress.NamingConventions.ValidFunctionName.FunctionNameInvalid
+function comment_ID() {
 	echo get_comment_ID();
 }
 
@@ -1993,9 +1996,8 @@ function wp_list_comments( $args = array(), $comments = null ) {
 
 	$in_comment_loop = true;
 
-	$comment_alt        = 0;
-	$comment_thread_alt = 0;
-	$comment_depth      = 1;
+	$comment_alt   = $comment_thread_alt = 0;
+	$comment_depth = 1;
 
 	$defaults = array(
 		'walker'            => null,
@@ -2014,7 +2016,7 @@ function wp_list_comments( $args = array(), $comments = null ) {
 		'echo'              => true,
 	);
 
-	$parsed_args = wp_parse_args( $args, $defaults );
+	$r = wp_parse_args( $args, $defaults );
 
 	/**
 	 * Filters the arguments used in retrieving the comment list.
@@ -2023,9 +2025,9 @@ function wp_list_comments( $args = array(), $comments = null ) {
 	 *
 	 * @see wp_list_comments()
 	 *
-	 * @param array $parsed_args An array of arguments for displaying comments.
+	 * @param array $r An array of arguments for displaying comments.
 	 */
-	$parsed_args = apply_filters( 'wp_list_comments_args', $parsed_args );
+	$r = apply_filters( 'wp_list_comments_args', $r );
 
 	// Figure out what comments we'll be looping through ($_comments)
 	if ( null !== $comments ) {
@@ -2033,12 +2035,12 @@ function wp_list_comments( $args = array(), $comments = null ) {
 		if ( empty( $comments ) ) {
 			return;
 		}
-		if ( 'all' != $parsed_args['type'] ) {
+		if ( 'all' != $r['type'] ) {
 			$comments_by_type = separate_comments( $comments );
-			if ( empty( $comments_by_type[ $parsed_args['type'] ] ) ) {
+			if ( empty( $comments_by_type[ $r['type'] ] ) ) {
 				return;
 			}
-			$_comments = $comments_by_type[ $parsed_args['type'] ];
+			$_comments = $comments_by_type[ $r['type'] ];
 		} else {
 			$_comments = $comments;
 		}
@@ -2047,14 +2049,14 @@ function wp_list_comments( $args = array(), $comments = null ) {
 		 * If 'page' or 'per_page' has been passed, and does not match what's in $wp_query,
 		 * perform a separate comment query and allow Walker_Comment to paginate.
 		 */
-		if ( $parsed_args['page'] || $parsed_args['per_page'] ) {
+		if ( $r['page'] || $r['per_page'] ) {
 			$current_cpage = get_query_var( 'cpage' );
 			if ( ! $current_cpage ) {
 				$current_cpage = 'newest' === get_option( 'default_comments_page' ) ? 1 : $wp_query->max_num_comment_pages;
 			}
 
 			$current_per_page = get_query_var( 'comments_per_page' );
-			if ( $parsed_args['page'] != $current_cpage || $parsed_args['per_page'] != $current_per_page ) {
+			if ( $r['page'] != $current_cpage || $r['per_page'] != $current_per_page ) {
 				$comment_args = array(
 					'post_id' => get_the_ID(),
 					'orderby' => 'comment_date_gmt',
@@ -2074,13 +2076,13 @@ function wp_list_comments( $args = array(), $comments = null ) {
 
 				$comments = get_comments( $comment_args );
 
-				if ( 'all' != $parsed_args['type'] ) {
+				if ( 'all' != $r['type'] ) {
 					$comments_by_type = separate_comments( $comments );
-					if ( empty( $comments_by_type[ $parsed_args['type'] ] ) ) {
+					if ( empty( $comments_by_type[ $r['type'] ] ) ) {
 						return;
 					}
 
-					$_comments = $comments_by_type[ $parsed_args['type'] ];
+					$_comments = $comments_by_type[ $r['type'] ];
 				} else {
 					$_comments = $comments;
 				}
@@ -2091,14 +2093,14 @@ function wp_list_comments( $args = array(), $comments = null ) {
 			if ( empty( $wp_query->comments ) ) {
 				return;
 			}
-			if ( 'all' != $parsed_args['type'] ) {
+			if ( 'all' != $r['type'] ) {
 				if ( empty( $wp_query->comments_by_type ) ) {
 					$wp_query->comments_by_type = separate_comments( $wp_query->comments );
 				}
-				if ( empty( $wp_query->comments_by_type[ $parsed_args['type'] ] ) ) {
+				if ( empty( $wp_query->comments_by_type[ $r['type'] ] ) ) {
 					return;
 				}
-				$_comments = $wp_query->comments_by_type[ $parsed_args['type'] ];
+				$_comments = $wp_query->comments_by_type[ $r['type'] ];
 			} else {
 				$_comments = $wp_query->comments;
 			}
@@ -2107,73 +2109,73 @@ function wp_list_comments( $args = array(), $comments = null ) {
 				$default_comments_page = get_option( 'default_comments_page' );
 				$cpage                 = get_query_var( 'cpage' );
 				if ( 'newest' === $default_comments_page ) {
-					$parsed_args['cpage'] = $cpage;
+					$r['cpage'] = $cpage;
 
 					/*
 					* When first page shows oldest comments, post permalink is the same as
 					* the comment permalink.
 					*/
 				} elseif ( $cpage == 1 ) {
-					$parsed_args['cpage'] = '';
+					$r['cpage'] = '';
 				} else {
-					$parsed_args['cpage'] = $cpage;
+					$r['cpage'] = $cpage;
 				}
 
-				$parsed_args['page']     = 0;
-				$parsed_args['per_page'] = 0;
+				$r['page']     = 0;
+				$r['per_page'] = 0;
 			}
 		}
 	}
 
-	if ( '' === $parsed_args['per_page'] && get_option( 'page_comments' ) ) {
-		$parsed_args['per_page'] = get_query_var( 'comments_per_page' );
+	if ( '' === $r['per_page'] && get_option( 'page_comments' ) ) {
+		$r['per_page'] = get_query_var( 'comments_per_page' );
 	}
 
-	if ( empty( $parsed_args['per_page'] ) ) {
-		$parsed_args['per_page'] = 0;
-		$parsed_args['page']     = 0;
+	if ( empty( $r['per_page'] ) ) {
+		$r['per_page'] = 0;
+		$r['page']     = 0;
 	}
 
-	if ( '' === $parsed_args['max_depth'] ) {
+	if ( '' === $r['max_depth'] ) {
 		if ( get_option( 'thread_comments' ) ) {
-			$parsed_args['max_depth'] = get_option( 'thread_comments_depth' );
+			$r['max_depth'] = get_option( 'thread_comments_depth' );
 		} else {
-			$parsed_args['max_depth'] = -1;
+			$r['max_depth'] = -1;
 		}
 	}
 
-	if ( '' === $parsed_args['page'] ) {
+	if ( '' === $r['page'] ) {
 		if ( empty( $overridden_cpage ) ) {
-			$parsed_args['page'] = get_query_var( 'cpage' );
+			$r['page'] = get_query_var( 'cpage' );
 		} else {
-			$threaded            = ( -1 != $parsed_args['max_depth'] );
-			$parsed_args['page'] = ( 'newest' == get_option( 'default_comments_page' ) ) ? get_comment_pages_count( $_comments, $parsed_args['per_page'], $threaded ) : 1;
-			set_query_var( 'cpage', $parsed_args['page'] );
+			$threaded  = ( -1 != $r['max_depth'] );
+			$r['page'] = ( 'newest' == get_option( 'default_comments_page' ) ) ? get_comment_pages_count( $_comments, $r['per_page'], $threaded ) : 1;
+			set_query_var( 'cpage', $r['page'] );
 		}
 	}
 	// Validation check
-	$parsed_args['page'] = intval( $parsed_args['page'] );
-	if ( 0 == $parsed_args['page'] && 0 != $parsed_args['per_page'] ) {
-		$parsed_args['page'] = 1;
+	$r['page'] = intval( $r['page'] );
+	if ( 0 == $r['page'] && 0 != $r['per_page'] ) {
+		$r['page'] = 1;
 	}
 
-	if ( null === $parsed_args['reverse_top_level'] ) {
-		$parsed_args['reverse_top_level'] = ( 'desc' == get_option( 'comment_order' ) );
+	if ( null === $r['reverse_top_level'] ) {
+		$r['reverse_top_level'] = ( 'desc' == get_option( 'comment_order' ) );
 	}
 
 	wp_queue_comments_for_comment_meta_lazyload( $_comments );
 
-	if ( empty( $parsed_args['walker'] ) ) {
+	if ( empty( $r['walker'] ) ) {
 		$walker = new Walker_Comment;
 	} else {
-		$walker = $parsed_args['walker'];
+		$walker = $r['walker'];
 	}
 
-	$output = $walker->paged_walk( $_comments, $parsed_args['max_depth'], $parsed_args['page'], $parsed_args['per_page'], $parsed_args );
+	$output = $walker->paged_walk( $_comments, $r['max_depth'], $r['page'], $r['per_page'], $r );
 
 	$in_comment_loop = false;
 
-	if ( $parsed_args['echo'] ) {
+	if ( $r['echo'] ) {
 		echo $output;
 	} else {
 		return $output;
@@ -2275,17 +2277,17 @@ function comment_form( $args = array(), $post_id = null ) {
 	$html5    = 'html5' === $args['format'];
 	$fields   = array(
 		'author' => '<p class="comment-form-author">' . '<label for="author">' . __( 'Name' ) . ( $req ? ' <span class="required">*</span>' : '' ) . '</label> ' .
-					'<input id="author" name="author" type="text" value="' . esc_attr( $commenter['comment_author'] ) . '" size="30" maxlength="245"' . $html_req . ' /></p>',
+					 '<input id="author" name="author" type="text" value="' . esc_attr( $commenter['comment_author'] ) . '" size="30" maxlength="245"' . $html_req . ' /></p>',
 		'email'  => '<p class="comment-form-email"><label for="email">' . __( 'Email' ) . ( $req ? ' <span class="required">*</span>' : '' ) . '</label> ' .
-					'<input id="email" name="email" ' . ( $html5 ? 'type="email"' : 'type="text"' ) . ' value="' . esc_attr( $commenter['comment_author_email'] ) . '" size="30" maxlength="100" aria-describedby="email-notes"' . $html_req . ' /></p>',
+					 '<input id="email" name="email" ' . ( $html5 ? 'type="email"' : 'type="text"' ) . ' value="' . esc_attr( $commenter['comment_author_email'] ) . '" size="30" maxlength="100" aria-describedby="email-notes"' . $html_req . ' /></p>',
 		'url'    => '<p class="comment-form-url"><label for="url">' . __( 'Website' ) . '</label> ' .
-					'<input id="url" name="url" ' . ( $html5 ? 'type="url"' : 'type="text"' ) . ' value="' . esc_attr( $commenter['comment_author_url'] ) . '" size="30" maxlength="200" /></p>',
+					 '<input id="url" name="url" ' . ( $html5 ? 'type="url"' : 'type="text"' ) . ' value="' . esc_attr( $commenter['comment_author_url'] ) . '" size="30" maxlength="200" /></p>',
 	);
 
 	if ( has_action( 'set_comment_cookies', 'wp_set_comment_cookies' ) && get_option( 'show_comments_cookies_opt_in' ) ) {
 		$consent           = empty( $commenter['comment_author_email'] ) ? '' : ' checked="checked"';
 		$fields['cookies'] = '<p class="comment-form-cookies-consent"><input id="wp-comment-cookies-consent" name="wp-comment-cookies-consent" type="checkbox" value="yes"' . $consent . ' />' .
-							'<label for="wp-comment-cookies-consent">' . __( 'Save my name, email, and website in this browser for the next time I comment.' ) . '</label></p>';
+							 '<label for="wp-comment-cookies-consent">' . __( 'Save my name, email, and website in this browser for the next time I comment.' ) . '</label></p>';
 
 		// Ensure that the passed fields include cookies consent.
 		if ( isset( $args['fields'] ) && ! isset( $args['fields']['cookies'] ) ) {

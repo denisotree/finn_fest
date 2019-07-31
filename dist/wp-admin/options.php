@@ -47,7 +47,7 @@ if ( empty( $option_page ) ) {
 if ( ! current_user_can( $capability ) ) {
 	wp_die(
 		'<h1>' . __( 'You need a higher level of permission.' ) . '</h1>' .
-		'<p>' . __( 'Sorry, you are not allowed to manage options for this site.' ) . '</p>',
+		'<p>' . __( 'Sorry, you are not allowed to manage these options.' ) . '</p>',
 		403
 	);
 }
@@ -80,7 +80,7 @@ if ( is_multisite() && ! current_user_can( 'manage_network_options' ) && 'update
 	);
 }
 
-$whitelist_options            = array(
+$whitelist_options         = array(
 	'general'    => array(
 		'blogname',
 		'blogdescription',
@@ -146,9 +146,7 @@ $whitelist_options            = array(
 		'default_post_format',
 	),
 );
-$whitelist_options['misc']    = array();
-$whitelist_options['options'] = array();
-$whitelist_options['privacy'] = array();
+$whitelist_options['misc'] = $whitelist_options['options'] = $whitelist_options['privacy'] = array();
 
 $mail_options = array( 'mailserver_url', 'mailserver_port', 'mailserver_login', 'mailserver_pass' );
 
@@ -267,7 +265,7 @@ if ( 'update' == $action ) {
 					'2.7.0',
 					sprintf(
 						/* translators: %s: the option/setting */
-						__( 'The %s setting is unregistered. Unregistered settings are deprecated. See https://developer.wordpress.org/plugins/settings/settings-api/' ),
+						__( 'The %s setting is unregistered. Unregistered settings are deprecated. See https://codex.wordpress.org/Settings_API' ),
 						'<code>' . $option . '</code>'
 					)
 				);
@@ -322,7 +320,7 @@ include( ABSPATH . 'wp-admin/admin-header.php' ); ?>
 		<?php wp_nonce_field( 'options-options' ); ?>
 		<input type="hidden" name="action" value="update" />
 		<input type="hidden" name="option_page" value="options" />
-		<table class="form-table" role="presentation">
+		<table class="form-table">
 <?php
 $options = $wpdb->get_results( "SELECT * FROM $wpdb->options ORDER BY option_name" );
 

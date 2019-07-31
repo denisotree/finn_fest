@@ -12,7 +12,7 @@ define( 'WP_LOAD_IMPORTERS', true );
 require_once( dirname( __FILE__ ) . '/admin.php' );
 
 if ( ! current_user_can( 'import' ) ) {
-	wp_die( __( 'Sorry, you are not allowed to import content into this site.' ) );
+	wp_die( __( 'Sorry, you are not allowed to import content.' ) );
 }
 
 $title = __( 'Import' );
@@ -28,7 +28,7 @@ get_current_screen()->add_help_tab(
 
 get_current_screen()->set_help_sidebar(
 	'<p><strong>' . __( 'For more information:' ) . '</strong></p>' .
-	'<p>' . __( '<a href="https://wordpress.org/support/article/tools-import-screen/">Documentation on Import</a>' ) . '</p>' .
+	'<p>' . __( '<a href="https://codex.wordpress.org/Tools_Import_Screen">Documentation on Import</a>' ) . '</p>' .
 	'<p>' . __( '<a href="https://wordpress.org/support/">Support</a>' ) . '</p>'
 );
 
@@ -101,8 +101,7 @@ if ( empty( $importers ) ) {
 
 	<?php
 	foreach ( $importers as $importer_id => $data ) {
-		$plugin_slug         = '';
-		$action              = '';
+		$plugin_slug         = $action = '';
 		$is_plugin_installed = false;
 
 		if ( isset( $data['install'] ) ) {

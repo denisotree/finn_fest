@@ -273,10 +273,7 @@ function add_feed( $feedname, $function ) {
  */
 function flush_rewrite_rules( $hard = true ) {
 	global $wp_rewrite;
-
-	if ( is_callable( array( $wp_rewrite, 'flush_rules' ) ) ) {
-		$wp_rewrite->flush_rules( $hard );
-	}
+	$wp_rewrite->flush_rules( $hard );
 }
 
 /**

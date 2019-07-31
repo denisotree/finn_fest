@@ -352,12 +352,12 @@ function wp_loginout( $redirect = '', $echo = true ) {
  * @return string The logout URL. Note: HTML-encoded via esc_html() in wp_nonce_url().
  */
 function wp_logout_url( $redirect = '' ) {
-	$args = array();
+	$args = array( 'action' => 'logout' );
 	if ( ! empty( $redirect ) ) {
 		$args['redirect_to'] = urlencode( $redirect );
 	}
 
-	$logout_url = add_query_arg( $args, site_url( 'wp-login.php?action=logout', 'login' ) );
+	$logout_url = add_query_arg( $args, site_url( 'wp-login.php', 'login' ) );
 	$logout_url = wp_nonce_url( $logout_url, 'log-out' );
 
 	/**
@@ -558,12 +558,12 @@ function wp_login_form( $args = array() ) {
  * @return string Lost password URL.
  */
 function wp_lostpassword_url( $redirect = '' ) {
-	$args = array();
+	$args = array( 'action' => 'lostpassword' );
 	if ( ! empty( $redirect ) ) {
 		$args['redirect_to'] = urlencode( $redirect );
 	}
 
-	$lostpassword_url = add_query_arg( $args, network_site_url( 'wp-login.php?action=lostpassword', 'login' ) );
+	$lostpassword_url = add_query_arg( $args, network_site_url( 'wp-login.php', 'login' ) );
 
 	/**
 	 * Filters the Lost Password URL.
@@ -1080,8 +1080,7 @@ function wp_get_document_title() {
 		$title['title'] = single_term_title( '', false );
 
 		// If on an author archive, use the author's display name.
-	} elseif ( is_author() && get_queried_object() ) {
-		$author         = get_queried_object();
+	} elseif ( is_author() && $author = get_queried_object() ) {
 		$title['title'] = $author->display_name;
 
 		// If it's a date archive, use the date as the title.
@@ -1179,7 +1178,7 @@ function _wp_render_title_tag() {
  * @param string $sep         Optional, default is '&raquo;'. How to separate the various items
  *                            within the page title.
  * @param bool   $display     Optional, default is true. Whether to display or retrieve title.
- * @param string $seplocation Optional. Location of the separator ('left' or 'right').
+ * @param string $seplocation Optional. Direction to display title, 'right'.
  * @return string|null String on retrieve, null when displaying.
  */
 function wp_title( $sep = '&raquo;', $display = true, $seplocation = '' ) {
@@ -1295,9 +1294,9 @@ function wp_title( $sep = '&raquo;', $display = true, $seplocation = '' ) {
 	 *
 	 * @since 2.0.0
 	 *
-	 * @param string $title       Page title.
-	 * @param string $sep         Title separator.
-	 * @param string $seplocation Location of the separator ('left' or 'right').
+	 * @param string $title Page title.
+	 * @param string $sep Title separator.
+	 * @param string $seplocation Location of the separator (left or right).
 	 */
 	$title = apply_filters( 'wp_title', $title, $sep, $seplocation );
 
@@ -1821,24 +1820,24 @@ function wp_get_archives( $args = '' ) {
 		'w'               => get_query_var( 'w' ),
 	);
 
-	$parsed_args = wp_parse_args( $args, $defaults );
+	$r = wp_parse_args( $args, $defaults );
 
-	$post_type_object = get_post_type_object( $parsed_args['post_type'] );
+	$post_type_object = get_post_type_object( $r['post_type'] );
 	if ( ! is_post_type_viewable( $post_type_object ) ) {
 		return;
 	}
-	$parsed_args['post_type'] = $post_type_object->name;
+	$r['post_type'] = $post_type_object->name;
 
-	if ( '' == $parsed_args['type'] ) {
-		$parsed_args['type'] = 'monthly';
+	if ( '' == $r['type'] ) {
+		$r['type'] = 'monthly';
 	}
 
-	if ( ! empty( $parsed_args['limit'] ) ) {
-		$parsed_args['limit'] = absint( $parsed_args['limit'] );
-		$parsed_args['limit'] = ' LIMIT ' . $parsed_args['limit'];
+	if ( ! empty( $r['limit'] ) ) {
+		$r['limit'] = absint( $r['limit'] );
+		$r['limit'] = ' LIMIT ' . $r['limit'];
 	}
 
-	$order = strtoupper( $parsed_args['order'] );
+	$order = strtoupper( $r['order'] );
 	if ( $order !== 'ASC' ) {
 		$order = 'DESC';
 	}
@@ -1846,7 +1845,7 @@ function wp_get_archives( $args = '' ) {
 	// this is what will separate dates on weekly archive links
 	$archive_week_separator = '&#8211;';
 
-	$sql_where = $wpdb->prepare( "WHERE post_type = %s AND post_status = 'publish'", $parsed_args['post_type'] );
+	$sql_where = $wpdb->prepare( "WHERE post_type = %s AND post_status = 'publish'", $r['post_type'] );
 
 	/**
 	 * Filters the SQL WHERE clause for retrieving archives.
@@ -1854,113 +1853,109 @@ function wp_get_archives( $args = '' ) {
 	 * @since 2.2.0
 	 *
 	 * @param string $sql_where Portion of SQL query containing the WHERE clause.
-	 * @param array  $parsed_args         An array of default arguments.
+	 * @param array  $r         An array of default arguments.
 	 */
-	$where = apply_filters( 'getarchives_where', $sql_where, $parsed_args );
+	$where = apply_filters( 'getarchives_where', $sql_where, $r );
 
 	/**
 	 * Filters the SQL JOIN clause for retrieving archives.
 	 *
 	 * @since 2.2.0
 	 *
-	 * @param string $sql_join    Portion of SQL query containing JOIN clause.
-	 * @param array  $parsed_args An array of default arguments.
+	 * @param string $sql_join Portion of SQL query containing JOIN clause.
+	 * @param array  $r        An array of default arguments.
 	 */
-	$join = apply_filters( 'getarchives_join', '', $parsed_args );
+	$join = apply_filters( 'getarchives_join', '', $r );
 
 	$output = '';
 
 	$last_changed = wp_cache_get_last_changed( 'posts' );
 
-	$limit = $parsed_args['limit'];
+	$limit = $r['limit'];
 
-	if ( 'monthly' == $parsed_args['type'] ) {
-		$query   = "SELECT YEAR(post_date) AS `year`, MONTH(post_date) AS `month`, count(ID) as posts FROM $wpdb->posts $join $where GROUP BY YEAR(post_date), MONTH(post_date) ORDER BY post_date $order $limit";
-		$key     = md5( $query );
-		$key     = "wp_get_archives:$key:$last_changed";
-		$results = wp_cache_get( $key, 'posts' );
-		if ( ! $results ) {
+	if ( 'monthly' == $r['type'] ) {
+		$query = "SELECT YEAR(post_date) AS `year`, MONTH(post_date) AS `month`, count(ID) as posts FROM $wpdb->posts $join $where GROUP BY YEAR(post_date), MONTH(post_date) ORDER BY post_date $order $limit";
+		$key   = md5( $query );
+		$key   = "wp_get_archives:$key:$last_changed";
+		if ( ! $results = wp_cache_get( $key, 'posts' ) ) {
 			$results = $wpdb->get_results( $query );
 			wp_cache_set( $key, $results, 'posts' );
 		}
 		if ( $results ) {
-			$after = $parsed_args['after'];
+			$after = $r['after'];
 			foreach ( (array) $results as $result ) {
 				$url = get_month_link( $result->year, $result->month );
-				if ( 'post' !== $parsed_args['post_type'] ) {
-					$url = add_query_arg( 'post_type', $parsed_args['post_type'], $url );
+				if ( 'post' !== $r['post_type'] ) {
+					$url = add_query_arg( 'post_type', $r['post_type'], $url );
 				}
 				/* translators: 1: month name, 2: 4-digit year */
 				$text = sprintf( __( '%1$s %2$d' ), $wp_locale->get_month( $result->month ), $result->year );
-				if ( $parsed_args['show_post_count'] ) {
-					$parsed_args['after'] = '&nbsp;(' . $result->posts . ')' . $after;
+				if ( $r['show_post_count'] ) {
+					$r['after'] = '&nbsp;(' . $result->posts . ')' . $after;
 				}
-				$selected = is_archive() && (string) $parsed_args['year'] === $result->year && (string) $parsed_args['monthnum'] === $result->month;
-				$output  .= get_archives_link( $url, $text, $parsed_args['format'], $parsed_args['before'], $parsed_args['after'], $selected );
+				$selected = is_archive() && (string) $r['year'] === $result->year && (string) $r['monthnum'] === $result->month;
+				$output  .= get_archives_link( $url, $text, $r['format'], $r['before'], $r['after'], $selected );
 			}
 		}
-	} elseif ( 'yearly' == $parsed_args['type'] ) {
-		$query   = "SELECT YEAR(post_date) AS `year`, count(ID) as posts FROM $wpdb->posts $join $where GROUP BY YEAR(post_date) ORDER BY post_date $order $limit";
-		$key     = md5( $query );
-		$key     = "wp_get_archives:$key:$last_changed";
-		$results = wp_cache_get( $key, 'posts' );
-		if ( ! $results ) {
+	} elseif ( 'yearly' == $r['type'] ) {
+		$query = "SELECT YEAR(post_date) AS `year`, count(ID) as posts FROM $wpdb->posts $join $where GROUP BY YEAR(post_date) ORDER BY post_date $order $limit";
+		$key   = md5( $query );
+		$key   = "wp_get_archives:$key:$last_changed";
+		if ( ! $results = wp_cache_get( $key, 'posts' ) ) {
 			$results = $wpdb->get_results( $query );
 			wp_cache_set( $key, $results, 'posts' );
 		}
 		if ( $results ) {
-			$after = $parsed_args['after'];
+			$after = $r['after'];
 			foreach ( (array) $results as $result ) {
 				$url = get_year_link( $result->year );
-				if ( 'post' !== $parsed_args['post_type'] ) {
-					$url = add_query_arg( 'post_type', $parsed_args['post_type'], $url );
+				if ( 'post' !== $r['post_type'] ) {
+					$url = add_query_arg( 'post_type', $r['post_type'], $url );
 				}
 				$text = sprintf( '%d', $result->year );
-				if ( $parsed_args['show_post_count'] ) {
-					$parsed_args['after'] = '&nbsp;(' . $result->posts . ')' . $after;
+				if ( $r['show_post_count'] ) {
+					$r['after'] = '&nbsp;(' . $result->posts . ')' . $after;
 				}
-				$selected = is_archive() && (string) $parsed_args['year'] === $result->year;
-				$output  .= get_archives_link( $url, $text, $parsed_args['format'], $parsed_args['before'], $parsed_args['after'], $selected );
+				$selected = is_archive() && (string) $r['year'] === $result->year;
+				$output  .= get_archives_link( $url, $text, $r['format'], $r['before'], $r['after'], $selected );
 			}
 		}
-	} elseif ( 'daily' == $parsed_args['type'] ) {
-		$query   = "SELECT YEAR(post_date) AS `year`, MONTH(post_date) AS `month`, DAYOFMONTH(post_date) AS `dayofmonth`, count(ID) as posts FROM $wpdb->posts $join $where GROUP BY YEAR(post_date), MONTH(post_date), DAYOFMONTH(post_date) ORDER BY post_date $order $limit";
-		$key     = md5( $query );
-		$key     = "wp_get_archives:$key:$last_changed";
-		$results = wp_cache_get( $key, 'posts' );
-		if ( ! $results ) {
+	} elseif ( 'daily' == $r['type'] ) {
+		$query = "SELECT YEAR(post_date) AS `year`, MONTH(post_date) AS `month`, DAYOFMONTH(post_date) AS `dayofmonth`, count(ID) as posts FROM $wpdb->posts $join $where GROUP BY YEAR(post_date), MONTH(post_date), DAYOFMONTH(post_date) ORDER BY post_date $order $limit";
+		$key   = md5( $query );
+		$key   = "wp_get_archives:$key:$last_changed";
+		if ( ! $results = wp_cache_get( $key, 'posts' ) ) {
 			$results = $wpdb->get_results( $query );
 			wp_cache_set( $key, $results, 'posts' );
 		}
 		if ( $results ) {
-			$after = $parsed_args['after'];
+			$after = $r['after'];
 			foreach ( (array) $results as $result ) {
 				$url = get_day_link( $result->year, $result->month, $result->dayofmonth );
-				if ( 'post' !== $parsed_args['post_type'] ) {
-					$url = add_query_arg( 'post_type', $parsed_args['post_type'], $url );
+				if ( 'post' !== $r['post_type'] ) {
+					$url = add_query_arg( 'post_type', $r['post_type'], $url );
 				}
 				$date = sprintf( '%1$d-%2$02d-%3$02d 00:00:00', $result->year, $result->month, $result->dayofmonth );
 				$text = mysql2date( get_option( 'date_format' ), $date );
-				if ( $parsed_args['show_post_count'] ) {
-					$parsed_args['after'] = '&nbsp;(' . $result->posts . ')' . $after;
+				if ( $r['show_post_count'] ) {
+					$r['after'] = '&nbsp;(' . $result->posts . ')' . $after;
 				}
-				$selected = is_archive() && (string) $parsed_args['year'] === $result->year && (string) $parsed_args['monthnum'] === $result->month && (string) $parsed_args['day'] === $result->dayofmonth;
-				$output  .= get_archives_link( $url, $text, $parsed_args['format'], $parsed_args['before'], $parsed_args['after'], $selected );
+				$selected = is_archive() && (string) $r['year'] === $result->year && (string) $r['monthnum'] === $result->month && (string) $r['day'] === $result->dayofmonth;
+				$output  .= get_archives_link( $url, $text, $r['format'], $r['before'], $r['after'], $selected );
 			}
 		}
-	} elseif ( 'weekly' == $parsed_args['type'] ) {
-		$week    = _wp_mysql_week( '`post_date`' );
-		$query   = "SELECT DISTINCT $week AS `week`, YEAR( `post_date` ) AS `yr`, DATE_FORMAT( `post_date`, '%Y-%m-%d' ) AS `yyyymmdd`, count( `ID` ) AS `posts` FROM `$wpdb->posts` $join $where GROUP BY $week, YEAR( `post_date` ) ORDER BY `post_date` $order $limit";
-		$key     = md5( $query );
-		$key     = "wp_get_archives:$key:$last_changed";
-		$results = wp_cache_get( $key, 'posts' );
-		if ( ! $results ) {
+	} elseif ( 'weekly' == $r['type'] ) {
+		$week  = _wp_mysql_week( '`post_date`' );
+		$query = "SELECT DISTINCT $week AS `week`, YEAR( `post_date` ) AS `yr`, DATE_FORMAT( `post_date`, '%Y-%m-%d' ) AS `yyyymmdd`, count( `ID` ) AS `posts` FROM `$wpdb->posts` $join $where GROUP BY $week, YEAR( `post_date` ) ORDER BY `post_date` $order $limit";
+		$key   = md5( $query );
+		$key   = "wp_get_archives:$key:$last_changed";
+		if ( ! $results = wp_cache_get( $key, 'posts' ) ) {
 			$results = $wpdb->get_results( $query );
 			wp_cache_set( $key, $results, 'posts' );
 		}
 		$arc_w_last = '';
 		if ( $results ) {
-			$after = $parsed_args['after'];
+			$after = $r['after'];
 			foreach ( (array) $results as $result ) {
 				if ( $result->week != $arc_w_last ) {
 					$arc_year       = $result->yr;
@@ -1975,25 +1970,24 @@ function wp_get_archives( $args = '' ) {
 						),
 						home_url( '/' )
 					);
-					if ( 'post' !== $parsed_args['post_type'] ) {
-						$url = add_query_arg( 'post_type', $parsed_args['post_type'], $url );
+					if ( 'post' !== $r['post_type'] ) {
+						$url = add_query_arg( 'post_type', $r['post_type'], $url );
 					}
 					$text = $arc_week_start . $archive_week_separator . $arc_week_end;
-					if ( $parsed_args['show_post_count'] ) {
-						$parsed_args['after'] = '&nbsp;(' . $result->posts . ')' . $after;
+					if ( $r['show_post_count'] ) {
+						$r['after'] = '&nbsp;(' . $result->posts . ')' . $after;
 					}
-					$selected = is_archive() && (string) $parsed_args['year'] === $result->yr && (string) $parsed_args['w'] === $result->week;
-					$output  .= get_archives_link( $url, $text, $parsed_args['format'], $parsed_args['before'], $parsed_args['after'], $selected );
+					$selected = is_archive() && (string) $r['year'] === $result->yr && (string) $r['w'] === $result->week;
+					$output  .= get_archives_link( $url, $text, $r['format'], $r['before'], $r['after'], $selected );
 				}
 			}
 		}
-	} elseif ( ( 'postbypost' == $parsed_args['type'] ) || ( 'alpha' == $parsed_args['type'] ) ) {
-		$orderby = ( 'alpha' == $parsed_args['type'] ) ? 'post_title ASC ' : 'post_date DESC, ID DESC ';
+	} elseif ( ( 'postbypost' == $r['type'] ) || ( 'alpha' == $r['type'] ) ) {
+		$orderby = ( 'alpha' == $r['type'] ) ? 'post_title ASC ' : 'post_date DESC, ID DESC ';
 		$query   = "SELECT * FROM $wpdb->posts $join $where ORDER BY $orderby $limit";
 		$key     = md5( $query );
 		$key     = "wp_get_archives:$key:$last_changed";
-		$results = wp_cache_get( $key, 'posts' );
-		if ( ! $results ) {
+		if ( ! $results = wp_cache_get( $key, 'posts' ) ) {
 			$results = $wpdb->get_results( $query );
 			wp_cache_set( $key, $results, 'posts' );
 		}
@@ -2008,12 +2002,12 @@ function wp_get_archives( $args = '' ) {
 						$text = $result->ID;
 					}
 					$selected = $result->ID === get_the_ID();
-					$output  .= get_archives_link( $url, $text, $parsed_args['format'], $parsed_args['before'], $parsed_args['after'], $selected );
+					$output  .= get_archives_link( $url, $text, $r['format'], $r['before'], $r['after'], $selected );
 				}
 			}
 		}
 	}
-	if ( $parsed_args['echo'] ) {
+	if ( $r['echo'] ) {
 		echo $output;
 	} else {
 		return $output;
@@ -2113,7 +2107,7 @@ function get_calendar( $initial = true, $echo = true ) {
 	}
 
 	$unixmonth = mktime( 0, 0, 0, $thismonth, 1, $thisyear );
-	$last_day  = gmdate( 't', $unixmonth );
+	$last_day  = date( 't', $unixmonth );
 
 	// Get the next and previous month and year with at least one post
 	$previous = $wpdb->get_row(
@@ -2139,7 +2133,7 @@ function get_calendar( $initial = true, $echo = true ) {
 	<caption>' . sprintf(
 		$calendar_caption,
 		$wp_locale->get_month( $thismonth ),
-		gmdate( 'Y', $unixmonth )
+		date( 'Y', $unixmonth )
 	) . '</caption>
 	<thead>
 	<tr>';
@@ -2205,13 +2199,13 @@ function get_calendar( $initial = true, $echo = true ) {
 	}
 
 	// See how much we should pad in the beginning
-	$pad = calendar_week_mod( gmdate( 'w', $unixmonth ) - $week_begins );
+	$pad = calendar_week_mod( date( 'w', $unixmonth ) - $week_begins );
 	if ( 0 != $pad ) {
 		$calendar_output .= "\n\t\t" . '<td colspan="' . esc_attr( $pad ) . '" class="pad">&nbsp;</td>';
 	}
 
 	$newrow      = false;
-	$daysinmonth = (int) gmdate( 't', $unixmonth );
+	$daysinmonth = (int) date( 't', $unixmonth );
 
 	for ( $day = 1; $day <= $daysinmonth; ++$day ) {
 		if ( isset( $newrow ) && $newrow ) {
@@ -2229,7 +2223,7 @@ function get_calendar( $initial = true, $echo = true ) {
 
 		if ( in_array( $day, $daywithpost ) ) {
 			// any posts today?
-			$date_format = gmdate( _x( 'F j, Y', 'daily archives date format' ), strtotime( "{$thisyear}-{$thismonth}-{$day}" ) );
+			$date_format = date( _x( 'F j, Y', 'daily archives date format' ), strtotime( "{$thisyear}-{$thismonth}-{$day}" ) );
 			/* translators: Post calendar label. %s: Date */
 			$label            = sprintf( __( 'Posts published on %s' ), $date_format );
 			$calendar_output .= sprintf(
@@ -2243,12 +2237,12 @@ function get_calendar( $initial = true, $echo = true ) {
 		}
 		$calendar_output .= '</td>';
 
-		if ( 6 == calendar_week_mod( gmdate( 'w', mktime( 0, 0, 0, $thismonth, $day, $thisyear ) ) - $week_begins ) ) {
+		if ( 6 == calendar_week_mod( date( 'w', mktime( 0, 0, 0, $thismonth, $day, $thisyear ) ) - $week_begins ) ) {
 			$newrow = true;
 		}
 	}
 
-	$pad = 7 - calendar_week_mod( gmdate( 'w', mktime( 0, 0, 0, $thismonth, $day, $thisyear ) ) - $week_begins );
+	$pad = 7 - calendar_week_mod( date( 'w', mktime( 0, 0, 0, $thismonth, $day, $thisyear ) ) - $week_begins );
 	if ( $pad != 0 && $pad != 7 ) {
 		$calendar_output .= "\n\t\t" . '<td class="pad" colspan="' . esc_attr( $pad ) . '">&nbsp;</td>';
 	}
@@ -2334,8 +2328,8 @@ function the_date_xml() {
  *
  * @since 0.71
  *
- * @global string $currentday  The day of the current post in the loop.
- * @global string $previousday The day of the previous post in the loop.
+ * @global string|int|bool $currentday
+ * @global string|int|bool $previousday
  *
  * @param string $d      Optional. PHP date format defaults to the date_format option if not specified.
  * @param string $before Optional. Output before the date.
@@ -2346,30 +2340,28 @@ function the_date_xml() {
 function the_date( $d = '', $before = '', $after = '', $echo = true ) {
 	global $currentday, $previousday;
 
-	$the_date = '';
-
 	if ( is_new_day() ) {
 		$the_date    = $before . get_the_date( $d ) . $after;
 		$previousday = $currentday;
-	}
 
-	/**
-	 * Filters the date a post was published for display.
-	 *
-	 * @since 0.71
-	 *
-	 * @param string $the_date The formatted date string.
-	 * @param string $d        PHP date format. Defaults to 'date_format' option
-	 *                         if not specified.
-	 * @param string $before   HTML output before the date.
-	 * @param string $after    HTML output after the date.
-	 */
-	$the_date = apply_filters( 'the_date', $the_date, $d, $before, $after );
+		/**
+		 * Filters the date a post was published for display.
+		 *
+		 * @since 0.71
+		 *
+		 * @param string $the_date The formatted date string.
+		 * @param string $d        PHP date format. Defaults to 'date_format' option
+		 *                         if not specified.
+		 * @param string $before   HTML output before the date.
+		 * @param string $after    HTML output after the date.
+		 */
+		$the_date = apply_filters( 'the_date', $the_date, $d, $before, $after );
 
-	if ( $echo ) {
-		echo $the_date;
-	} else {
-		return $the_date;
+		if ( $echo ) {
+			echo $the_date;
+		} else {
+			return $the_date;
+		}
 	}
 }
 
@@ -2664,7 +2656,6 @@ function get_post_modified_time( $d = 'U', $gmt = false, $post = null, $translat
 	} else {
 		$time = $post->post_modified;
 	}
-
 	$time = mysql2date( $d, $time, $translate );
 
 	/**
@@ -2673,9 +2664,8 @@ function get_post_modified_time( $d = 'U', $gmt = false, $post = null, $translat
 	 * @since 2.8.0
 	 *
 	 * @param string $time The formatted time.
-	 * @param string $d    Format to use for retrieving the time the post was modified.
-	 *                     Accepts 'G', 'U', or php date format. Default 'U'.
-	 * @param bool   $gmt  Whether to retrieve the GMT time. Default false.
+	 * @param string $d    The date format. Accepts 'G', 'U', or php date format. Default 'U'.
+	 * @param bool   $gmt  Whether to return the GMT time. Default false.
 	 */
 	return apply_filters( 'get_post_modified_time', $time, $d, $gmt );
 }
@@ -2685,18 +2675,11 @@ function get_post_modified_time( $d = 'U', $gmt = false, $post = null, $translat
  *
  * @since 0.71
  *
- * @global WP_Locale $wp_locale The WordPress date and time locale object.
+ * @global WP_Locale $wp_locale
  */
 function the_weekday() {
 	global $wp_locale;
-
-	$post = get_post();
-
-	if ( ! $post ) {
-		return;
-	}
-
-	$the_weekday = $wp_locale->get_weekday( get_post_time( 'w', false, $post ) );
+	$the_weekday = $wp_locale->get_weekday( mysql2date( 'w', get_post()->post_date, false ) );
 
 	/**
 	 * Filters the weekday on which the post was written, for display.
@@ -2716,27 +2699,19 @@ function the_weekday() {
  *
  * @since 0.71
  *
- * @global WP_Locale $wp_locale       The WordPress date and time locale object.
- * @global string    $currentday      The day of the current post in the loop.
- * @global string    $previousweekday The day of the previous post in the loop.
+ * @global WP_Locale       $wp_locale
+ * @global string|int|bool $currentday
+ * @global string|int|bool $previousweekday
  *
- * @param string $before Optional. Output before the date.
- * @param string $after  Optional. Output after the date.
+ * @param string $before Optional Output before the date.
+ * @param string $after Optional Output after the date.
  */
 function the_weekday_date( $before = '', $after = '' ) {
 	global $wp_locale, $currentday, $previousweekday;
-
-	$post = get_post();
-
-	if ( ! $post ) {
-		return;
-	}
-
 	$the_weekday_date = '';
-
-	if ( $currentday !== $previousweekday ) {
+	if ( $currentday != $previousweekday ) {
 		$the_weekday_date .= $before;
-		$the_weekday_date .= $wp_locale->get_weekday( get_post_time( 'w', false, $post ) );
+		$the_weekday_date .= $wp_locale->get_weekday( mysql2date( 'w', get_post()->post_date, false ) );
 		$the_weekday_date .= $after;
 		$previousweekday   = $currentday;
 	}
@@ -2746,11 +2721,12 @@ function the_weekday_date( $before = '', $after = '' ) {
 	 *
 	 * @since 0.71
 	 *
-	 * @param string $the_weekday_date The weekday on which the post was written.
+	 * @param string $the_weekday_date
 	 * @param string $before           The HTML to output before the date.
 	 * @param string $after            The HTML to output after the date.
 	 */
-	echo apply_filters( 'the_weekday_date', $the_weekday_date, $before, $after );
+	$the_weekday_date = apply_filters( 'the_weekday_date', $the_weekday_date, $before, $after );
+	echo $the_weekday_date;
 }
 
 /**
@@ -3836,8 +3812,7 @@ function get_language_attributes( $doctype = 'html' ) {
 		$attributes[] = 'dir="rtl"';
 	}
 
-	$lang = get_bloginfo( 'language' );
-	if ( $lang ) {
+	if ( $lang = get_bloginfo( 'language' ) ) {
 		if ( get_option( 'html_type' ) == 'text/html' || $doctype == 'html' ) {
 			$attributes[] = 'lang="' . esc_attr( $lang ) . '"';
 		}
@@ -4459,7 +4434,7 @@ function get_the_generator( $type = '' ) {
 			$gen = '<!-- generator="WordPress/' . esc_attr( get_bloginfo( 'version' ) ) . '" -->';
 			break;
 		case 'export':
-			$gen = '<!-- generator="WordPress/' . esc_attr( get_bloginfo_rss( 'version' ) ) . '" created="' . gmdate( 'Y-m-d H:i' ) . '" -->';
+			$gen = '<!-- generator="WordPress/' . esc_attr( get_bloginfo_rss( 'version' ) ) . '" created="' . date( 'Y-m-d H:i' ) . '" -->';
 			break;
 	}
 
@@ -4555,7 +4530,7 @@ function readonly( $readonly, $current = true, $echo = true ) {
  * @param string $type    The type of checked|selected|disabled|readonly we are doing
  * @return string html attribute or empty string
  */
-function __checked_selected_helper( $helper, $current, $echo, $type ) { // phpcs:ignore WordPress.NamingConventions.ValidFunctionName.FunctionDoubleUnderscore
+function __checked_selected_helper( $helper, $current, $echo, $type ) {
 	if ( (string) $helper === (string) $current ) {
 		$result = " $type='$type'";
 	} else {

@@ -20,11 +20,8 @@ include( ABSPATH . 'wp-admin/admin-header.php' );
 
 <h1>
 	<?php
-	printf(
-		/* translators: %s: The current WordPress version number */
-		__( 'Welcome to WordPress&nbsp;%s' ),
-		$display_version
-	);
+	/* translators: %s: The current WordPress version number */
+	printf( __( 'Welcome to WordPress&nbsp;%s' ), $display_version );
 	?>
 </h1>
 
@@ -40,11 +37,8 @@ include( ABSPATH . 'wp-admin/admin-header.php' );
 
 <div class="wp-badge">
 	<?php
-	printf(
-		/* translators: %s: The current WordPress version number */
-		__( 'Version %s' ),
-		$display_version
-	);
+	/* translators: %s: The current WordPress version number */
+	printf( __( 'Version %s' ), $display_version );
 	?>
 </div>
 
@@ -52,7 +46,7 @@ include( ABSPATH . 'wp-admin/admin-header.php' );
 	<a href="about.php" class="nav-tab"><?php _e( 'What&#8217;s New' ); ?></a>
 	<a href="credits.php" class="nav-tab nav-tab-active" aria-current="page"><?php _e( 'Credits' ); ?></a>
 	<a href="freedoms.php" class="nav-tab"><?php _e( 'Freedoms' ); ?></a>
-	<a href="privacy.php" class="nav-tab"><?php _e( 'Privacy' ); ?></a>
+	<a href="freedoms.php?privacy-notice" class="nav-tab"><?php _e( 'Privacy' ); ?></a>
 </nav>
 
 <div class="about-wrap-content">
@@ -65,7 +59,7 @@ if ( ! $credits ) {
 	printf(
 		/* translators: 1: https://wordpress.org/about/, 2: https://make.wordpress.org/ */
 		__( 'WordPress is created by a <a href="%1$s">worldwide team</a> of passionate individuals. <a href="%2$s">Get involved in WordPress</a>.' ),
-		__( 'https://wordpress.org/about/' ),
+		'https://wordpress.org/about/',
 		__( 'https://make.wordpress.org/' )
 	);
 	echo '</p>';

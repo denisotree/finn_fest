@@ -116,11 +116,9 @@ function find_core_auto_update() {
  * @return bool|array False on failure. An array of checksums on success.
  */
 function get_core_checksums( $version, $locale ) {
-	$http_url = 'http://api.wordpress.org/core/checksums/1.0/?' . http_build_query( compact( 'version', 'locale' ), null, '&' );
-	$url      = $http_url;
+	$url = $http_url = 'http://api.wordpress.org/core/checksums/1.0/?' . http_build_query( compact( 'version', 'locale' ), null, '&' );
 
-	$ssl = wp_http_supports( array( 'ssl' ) );
-	if ( $ssl ) {
+	if ( $ssl = wp_http_supports( array( 'ssl' ) ) ) {
 		$url = set_url_scheme( $url, 'https' );
 	}
 
@@ -134,7 +132,7 @@ function get_core_checksums( $version, $locale ) {
 			sprintf(
 				/* translators: %s: support forums URL */
 				__( 'An unexpected error occurred. Something may be wrong with WordPress.org or this server&#8217;s configuration. If you continue to have problems, please try the <a href="%s">support forums</a>.' ),
-				__( 'https://wordpress.org/support/forums/' )
+				__( 'https://wordpress.org/support/' )
 			) . ' ' . __( '(WordPress could not establish a secure connection to WordPress.org. Please contact your server administrator.)' ),
 			headers_sent() || WP_DEBUG ? E_USER_WARNING : E_USER_NOTICE
 		);
@@ -507,7 +505,7 @@ function wp_plugin_update_row( $file, $plugin_data ) {
 		 *     @type string $package     Plugin update package URL.
 		 * }
 		 */
-		do_action( "in_plugin_update_message-{$file}", $plugin_data, $response ); // phpcs:ignore WordPress.NamingConventions.ValidHookName.UseUnderscores
+		do_action( "in_plugin_update_message-{$file}", $plugin_data, $response );
 
 		echo '</p></div></td></tr>';
 	}
@@ -646,7 +644,7 @@ function wp_theme_update_row( $theme_key, $theme ) {
 	 *     @type string $package     Theme update package URL.
 	 * }
 	 */
-	do_action( "in_theme_update_message-{$theme_key}", $theme, $response ); // phpcs:ignore WordPress.NamingConventions.ValidHookName.UseUnderscores
+	do_action( "in_theme_update_message-{$theme_key}", $theme, $response );
 
 	echo '</p></div></td></tr>';
 }

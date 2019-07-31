@@ -924,10 +924,10 @@ function rest_get_date_with_gmt( $date, $is_utc = false ) {
 	// Timezone conversion needs to be handled differently between these two
 	// cases.
 	if ( ! $is_utc && ! $has_timezone ) {
-		$local = gmdate( 'Y-m-d H:i:s', $date );
+		$local = date( 'Y-m-d H:i:s', $date );
 		$utc   = get_gmt_from_date( $local );
 	} else {
-		$utc   = gmdate( 'Y-m-d H:i:s', $date );
+		$utc   = date( 'Y-m-d H:i:s', $date );
 		$local = get_date_from_gmt( $utc );
 	}
 
@@ -1085,22 +1085,21 @@ function rest_is_boolean( $maybe_bool ) {
 }
 
 /**
- * Retrieves the avatar urls in various sizes.
+ * Retrieves the avatar urls in various sizes based on a given email address.
  *
  * @since 4.7.0
  *
  * @see get_avatar_url()
  *
- * @param mixed $id_or_email The Gravatar to retrieve a URL for. Accepts a user_id, gravatar md5 hash,
- *                           user email, WP_User object, WP_Post object, or WP_Comment object.
+ * @param string $email Email address.
  * @return array $urls Gravatar url for each size.
  */
-function rest_get_avatar_urls( $id_or_email ) {
+function rest_get_avatar_urls( $email ) {
 	$avatar_sizes = rest_get_avatar_sizes();
 
 	$urls = array();
 	foreach ( $avatar_sizes as $size ) {
-		$urls[ $size ] = get_avatar_url( $id_or_email, array( 'size' => $size ) );
+		$urls[ $size ] = get_avatar_url( $email, array( 'size' => $size ) );
 	}
 
 	return $urls;
@@ -1396,7 +1395,7 @@ function rest_preload_api_request( $memo, $path ) {
 	if ( 200 === $response->status ) {
 		$server = rest_get_server();
 		$data   = (array) $response->get_data();
-		$links  = $server::get_compact_response_links( $response );
+		$links  = $server->get_compact_response_links( $response );
 		if ( ! empty( $links ) ) {
 			$data['_links'] = $links;
 		}

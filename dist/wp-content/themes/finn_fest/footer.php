@@ -26,24 +26,16 @@
 
 		?>
 	</div>
-	<div class="container-fluid container-fluid__festivalphoto">
-		<?php 
-
-		get_component('components/footer-photo-slider.php', [])
-
-		?>
-	</div>
-<div class="container-fluid container-fluid__festivalvideo">
 	<?php
+	get_component('components/footer-photo-slider.php', []);
 
 	get_component('components/footer-video-slider.php', []);
 
 	get_component('components/footer-copyright.php', []);
 
-	get_component('components/footer-modal-form.php', [])
+	get_component('components/footer-modal-form.php', []);
 
 	?>
-</div>
 </footer>
 
 

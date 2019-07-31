@@ -324,8 +324,7 @@ function ms_load_current_site_and_network( $domain, $path, $subdomain = false ) 
 		 * If we're not dealing with one of these installations, then the important part is determining
 		 * the network first, because we need the network's path to identify any sites.
 		 */
-		$current_site = wp_cache_get( 'current_network', 'site-options' );
-		if ( ! $current_site ) {
+		if ( ! $current_site = wp_cache_get( 'current_network', 'site-options' ) ) {
 			// Are there even two networks installed?
 			$networks = get_networks( array( 'number' => 2 ) );
 			if ( count( $networks ) === 1 ) {
@@ -389,8 +388,7 @@ function ms_load_current_site_and_network( $domain, $path, $subdomain = false ) 
 	// During activation of a new subdomain, the requested site does not yet exist.
 	if ( empty( $current_blog ) && wp_installing() ) {
 		$current_blog          = new stdClass;
-		$current_blog->blog_id = 1;
-		$blog_id               = 1;
+		$current_blog->blog_id = $blog_id = 1;
 		$current_blog->public  = 1;
 	}
 
@@ -489,10 +487,10 @@ function ms_not_installed( $domain, $path ) {
 		) . '</p>';
 	}
 	$msg .= '<p><strong>' . __( 'What do I do now?' ) . '</strong> ';
-	/* translators: %s: Documentation URL */
+	/* translators: %s: Codex URL */
 	$msg .= sprintf(
 		__( 'Read the <a href="%s" target="_blank">bug report</a> page. Some of the guidelines there may help you figure out what went wrong.' ),
-		__( 'https://wordpress.org/support/article/debugging-a-wordpress-network/' )
+		__( 'https://codex.wordpress.org/Debugging_a_WordPress_Network' )
 	);
 	$msg .= ' ' . __( 'If you&#8217;re still stuck with this message, then check that your database contains the following tables:' ) . '</p><ul>';
 	foreach ( $wpdb->tables( 'global' ) as $t => $table ) {

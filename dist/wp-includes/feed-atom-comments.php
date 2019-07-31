@@ -70,8 +70,7 @@ do_action( 'rss_tag_pre', 'atom-comments' );
 if ( have_comments() ) :
 	while ( have_comments() ) :
 		the_comment();
-		$comment_post    = get_post( $comment->comment_post_ID );
-		$GLOBALS['post'] = $comment_post;
+		$comment_post = $GLOBALS['post'] = get_post( $comment->comment_post_ID );
 		?>
 	<entry>
 		<title>

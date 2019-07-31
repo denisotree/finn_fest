@@ -116,7 +116,7 @@ td > input[type="checkbox"],
 input[type="radio"] {
 	border-radius: 50%;
 	margin-left: 4px;
-	line-height: 0.71428571;
+	line-height: 10px;
 }
 
 input[type="checkbox"]:checked:before,
@@ -145,7 +145,7 @@ input[type="radio"]:checked:before {
 	width: 6px;
 	height: 6px;
 	margin: 4px;
-	line-height: 0.76190476;
+	line-height: 16px;
 	background-color: #1e8cbe;
 }
 
@@ -310,7 +310,7 @@ input[type="radio"].disabled:checked:before {
 
 .wp-admin select {
 	padding: 2px;
-	line-height: 2;
+	line-height: 28px;
 	height: 28px;
 	vertical-align: middle;
 }
@@ -464,7 +464,7 @@ fieldset label,
 	background-color: #eee;
 	border: 1px solid #ddd;
 	color: #23282d;
-	margin: -1px 1px 5px;
+	margin: -1px 0 5px;
 	padding: 3px 5px;
 	text-align: center;
 	width: 25em;
@@ -522,7 +522,7 @@ fieldset label,
 
 .wp-pwd [type="text"],
 .wp-pwd [type="password"] {
-	margin-bottom: 0;
+	margin: 0;
 	/* Same height as the buttons */
 	line-height: 20px;
 	min-height: 28px;
@@ -540,6 +540,10 @@ fieldset label,
 
 .show-password #pass1-text {
 	display: inline-block;
+}
+
+.form-table span.description.important {
+	font-size: 12px;
 }
 
 p.search-box {
@@ -685,7 +689,7 @@ ul#add-to-blog-users {
 .form-table td fieldset label,
 .form-table td fieldset p,
 .form-table td fieldset li {
-	line-height: 1.4;
+	line-height: 1.4em;
 }
 
 .form-table input.tog,
@@ -1109,7 +1113,7 @@ table.form-table td .updated p {
 }
 
 .tools-privacy-policy-page span {
-	line-height: 2;
+	line-height: 2em;
 }
 
 .privacy_requests .column-email {
@@ -1294,7 +1298,7 @@ table.form-table td .updated p {
 		width: 9px;
 		height: 9px;
 		margin: 7px;
-		line-height: 0.76190476;
+		line-height: 16px;
 	}
 
 	.wp-upload-form input[type="submit"] {
@@ -1419,7 +1423,7 @@ table.form-table td .updated p {
 	.form-table span.description {
 		display: inline;
 		padding: 4px 0 0;
-		line-height: 1.4;
+		line-height: 1.4em;
 		font-size: 14px;
 	}
 
@@ -1438,7 +1442,6 @@ table.form-table td .updated p {
 
 	.form-table.permalink-structure td code {
 		margin-right: 32px;
-		display: inline-block;
 	}
 
 	.form-table.permalink-structure td input[type="text"] {

@@ -45,7 +45,7 @@ get_current_screen()->add_help_tab(
 
 get_current_screen()->set_help_sidebar(
 	'<p><strong>' . __( 'For more information:' ) . '</strong></p>' .
-	'<p>' . __( '<a href="https://wordpress.org/support/article/settings-general-screen/">Documentation on General Settings</a>' ) . '</p>' .
+	'<p>' . __( '<a href="https://codex.wordpress.org/Settings_General_Screen">Documentation on General Settings</a>' ) . '</p>' .
 	'<p>' . __( '<a href="https://wordpress.org/support/">Support</a>' ) . '</p>'
 );
 
@@ -58,7 +58,7 @@ include( ABSPATH . 'wp-admin/admin-header.php' );
 <form method="post" action="options.php" novalidate="novalidate">
 <?php settings_fields( 'general' ); ?>
 
-<table class="form-table" role="presentation">
+<table class="form-table">
 
 <tr>
 <th scope="row"><label for="blogname"><?php _e( 'Site Title' ); ?></label></th>
@@ -73,8 +73,7 @@ include( ABSPATH . 'wp-admin/admin-header.php' );
 
 <?php
 if ( ! is_multisite() ) {
-	$wp_site_url_class = '';
-	$wp_home_class     = '';
+	$wp_site_url_class = $wp_home_class = '';
 	if ( defined( 'WP_SITEURL' ) ) {
 		$wp_site_url_class = ' disabled';
 	}
@@ -95,9 +94,9 @@ if ( ! is_multisite() ) {
 <p class="description" id="home-description">
 		<?php
 		printf(
-			/* translators: %s: Documentation URL */
+			/* translators: %s: Codex URL */
 			__( 'Enter the address here if you <a href="%s">want your site home page to be different from your WordPress installation directory</a>.' ),
-			__( 'https://wordpress.org/support/article/giving-wordpress-its-own-directory/' )
+			__( 'https://codex.wordpress.org/Giving_WordPress_Its_Own_Directory' )
 		);
 		?>
 </p>
@@ -163,7 +162,7 @@ if ( ! is_multisite() && defined( 'WPLANG' ) && '' !== WPLANG && 'en_US' !== WPL
 if ( ! empty( $languages ) || ! empty( $translations ) ) {
 	?>
 	<tr>
-		<th scope="row"><label for="WPLANG"><?php _e( 'Site Language' ); ?><span class="dashicons dashicons-translation" aria-hidden="true"></span></label></th>
+		<th scope="row"><label for="WPLANG"><?php _e( 'Site Language' ); ?></label></th>
 		<td>
 			<?php
 			$locale = get_locale();
@@ -253,10 +252,10 @@ if ( empty( $tzstring ) ) { // Create a UTC+- zone if no timezone string exists
 <p class="timezone-info">
 <span>
 	<?php
-	$now = new DateTime( 'now', new DateTimeZone( $tzstring ) );
-	$dst = (bool) $now->format( 'I' );
-
-	if ( $dst ) {
+	// Set TZ so localtime works.
+	date_default_timezone_set( $tzstring );
+	$now = localtime( time(), true );
+	if ( $now['tm_isdst'] ) {
 		_e( 'This timezone is currently in daylight saving time.' );
 	} else {
 		_e( 'This timezone is currently in standard time.' );
@@ -297,6 +296,8 @@ if ( empty( $tzstring ) ) { // Create a UTC+- zone if no timezone string exists
 			_e( 'This timezone does not observe daylight saving time.' );
 		}
 	}
+	// Set back to UTC.
+	date_default_timezone_set( 'UTC' );
 	?>
 	</span>
 </p>
@@ -376,7 +377,7 @@ foreach ( $time_formats as $format ) {
 		'<p><strong>' . __( 'Preview:' ) . '</strong> <span class="example">' . date_i18n( get_option( 'time_format' ) ) . '</span>' .
 		"<span class='spinner'></span>\n" . '</p>';
 
-	echo "\t<p class='date-time-doc'>" . __( '<a href="https://wordpress.org/support/article/formatting-date-and-time/">Documentation on date and time formatting</a>.' ) . "</p>\n";
+	echo "\t<p class='date-time-doc'>" . __( '<a href="https://codex.wordpress.org/Formatting_Date_and_Time">Documentation on date and time formatting</a>.' ) . "</p>\n";
 ?>
 	</fieldset>
 </td>

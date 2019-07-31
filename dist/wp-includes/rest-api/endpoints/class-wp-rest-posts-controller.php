@@ -1478,7 +1478,7 @@ class WP_REST_Posts_Controller extends WP_REST_Controller {
 			// based on the `post_modified` field with the site's timezone
 			// offset applied.
 			if ( '0000-00-00 00:00:00' === $post->post_modified_gmt ) {
-				$post_modified_gmt = gmdate( 'Y-m-d H:i:s', strtotime( $post->post_modified ) - ( get_option( 'gmt_offset' ) * 3600 ) );
+				$post_modified_gmt = date( 'Y-m-d H:i:s', strtotime( $post->post_modified ) - ( get_option( 'gmt_offset' ) * 3600 ) );
 			} else {
 				$post_modified_gmt = $post->post_modified_gmt;
 			}
@@ -1579,8 +1579,7 @@ class WP_REST_Posts_Controller extends WP_REST_Controller {
 		}
 
 		if ( in_array( 'template', $fields, true ) ) {
-			$template = get_page_template_slug( $post->ID );
-			if ( $template ) {
+			if ( $template = get_page_template_slug( $post->ID ) ) {
 				$data['template'] = $template;
 			} else {
 				$data['template'] = '';
@@ -1748,8 +1747,7 @@ class WP_REST_Posts_Controller extends WP_REST_Controller {
 		}
 
 		// If we have a featured media, add that.
-		$featured_media = get_post_thumbnail_id( $post->ID );
-		if ( $featured_media ) {
+		if ( $featured_media = get_post_thumbnail_id( $post->ID ) ) {
 			$image_url = rest_url( 'wp/v2/media/' . $featured_media );
 
 			$links['https://api.w.org/featuredmedia'] = array(

@@ -212,7 +212,7 @@ function get_permalink( $post = 0, $leavename = false ) {
 			$author     = $authordata->user_nicename;
 		}
 
-		$date           = explode( ' ', gmdate( 'Y m d H i s', $unixtime ) );
+		$date           = explode( ' ', date( 'Y m d H i s', $unixtime ) );
 		$rewritereplace =
 		array(
 			$date[0],
@@ -1197,9 +1197,7 @@ function get_search_comments_feed_link( $search_query = '', $feed = '' ) {
  */
 function get_post_type_archive_link( $post_type ) {
 	global $wp_rewrite;
-
-	$post_type_obj = get_post_type_object( $post_type );
-	if ( ! $post_type_obj ) {
+	if ( ! $post_type_obj = get_post_type_object( $post_type ) ) {
 		return false;
 	}
 
@@ -1258,8 +1256,7 @@ function get_post_type_archive_feed_link( $post_type, $feed = '' ) {
 		$feed = $default_feed;
 	}
 
-	$link = get_post_type_archive_link( $post_type );
-	if ( ! $link ) {
+	if ( ! $link = get_post_type_archive_link( $post_type ) ) {
 		return false;
 	}
 
@@ -1341,8 +1338,7 @@ function get_preview_post_link( $post = null, $query_args = array(), $preview_li
  *                     not allow an editing UI.
  */
 function get_edit_post_link( $id = 0, $context = 'display' ) {
-	$post = get_post( $id );
-	if ( ! $post ) {
+	if ( ! $post = get_post( $id ) ) {
 		return;
 	}
 
@@ -1395,13 +1391,11 @@ function get_edit_post_link( $id = 0, $context = 'display' ) {
  * @param string      $class  Optional. Add custom class to link. Default 'post-edit-link'.
  */
 function edit_post_link( $text = null, $before = '', $after = '', $id = 0, $class = 'post-edit-link' ) {
-	$post = get_post( $id );
-	if ( ! $post ) {
+	if ( ! $post = get_post( $id ) ) {
 		return;
 	}
 
-	$url = get_edit_post_link( $post->ID );
-	if ( ! $url ) {
+	if ( ! $url = get_edit_post_link( $post->ID ) ) {
 		return;
 	}
 
@@ -1440,8 +1434,7 @@ function get_delete_post_link( $id = 0, $deprecated = '', $force_delete = false 
 		_deprecated_argument( __FUNCTION__, '3.0.0' );
 	}
 
-	$post = get_post( $id );
-	if ( ! $post ) {
+	if ( ! $post = get_post( $id ) ) {
 		return;
 	}
 
@@ -1684,8 +1677,7 @@ function get_next_post( $in_same_term = false, $excluded_terms = '', $taxonomy =
 function get_adjacent_post( $in_same_term = false, $excluded_terms = '', $previous = true, $taxonomy = 'category' ) {
 	global $wpdb;
 
-	$post = get_post();
-	if ( ! $post || ! taxonomy_exists( $taxonomy ) ) {
+	if ( ( ! $post = get_post() ) || ! taxonomy_exists( $taxonomy ) ) {
 		return null;
 	}
 
@@ -1867,8 +1859,7 @@ function get_adjacent_post( $in_same_term = false, $excluded_terms = '', $previo
  * @return string|void The adjacent post relational link URL.
  */
 function get_adjacent_post_rel_link( $title = '%title', $in_same_term = false, $excluded_terms = '', $previous = true, $taxonomy = 'category' ) {
-	$post = get_post();
-	if ( $previous && is_attachment() && $post ) {
+	if ( $previous && is_attachment() && $post = get_post() ) {
 		$post = get_post( $post->post_parent );
 	} else {
 		$post = get_adjacent_post( $in_same_term, $excluded_terms, $previous, $taxonomy );
@@ -4092,8 +4083,7 @@ function get_avatar_data( $id_or_email, $args = null ) {
 	}
 
 	$email_hash = '';
-	$user       = false;
-	$email      = false;
+	$user       = $email = false;
 
 	if ( is_object( $id_or_email ) && isset( $id_or_email->comment_ID ) ) {
 		$id_or_email = get_comment( $id_or_email );

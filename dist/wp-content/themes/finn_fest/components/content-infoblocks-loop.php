@@ -18,7 +18,7 @@ if ($infoblocks_query->have_posts())
             $n = $infoblocks_query->current_post;
 
             $tag = CFS()->get('infoblock_tag');
-
+            if (!is_null($tabs)) {
             ?>
 
             <section class="content-block <?= $n % 2 ? "content-block__text-right" : "content-block__text-left" ?>" id="<?= $tag ?>">
@@ -56,7 +56,7 @@ if ($infoblocks_query->have_posts())
                     <img id="lineupimg" src="<?= $thumbnail ?>" alt="<?= $title ?>">
                 </div>
             </section>
-        <?php } 
+        <?php } }
         wp_reset_postdata();
         ?>
     </div>

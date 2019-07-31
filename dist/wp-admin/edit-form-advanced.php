@@ -40,9 +40,7 @@ if ( is_multisite() ) {
 }
 
 wp_enqueue_script( 'post' );
-
-$_wp_editor_expand   = false;
-$_content_editor_dfw = false;
+$_wp_editor_expand = $_content_editor_dfw = false;
 
 /**
  * Filters whether to enable the 'expand' functionality in the post editor.
@@ -108,13 +106,8 @@ if ( ! $permalink ) {
 
 $messages = array();
 
-$preview_post_link_html   = '';
-$scheduled_post_link_html = '';
-$view_post_link_html      = '';
-
-$preview_page_link_html   = '';
-$scheduled_page_link_html = '';
-$view_page_link_html      = '';
+$preview_post_link_html = $scheduled_post_link_html = $view_post_link_html = '';
+$preview_page_link_html = $scheduled_page_link_html = $view_page_link_html = '';
 
 $preview_url = get_preview_post_link( $post );
 
@@ -294,7 +287,7 @@ if ( 'post' == $post_type ) {
 	get_current_screen()->set_help_sidebar(
 		'<p>' . sprintf( __( 'You can also create posts with the <a href="%s">Press This bookmarklet</a>.' ), 'tools.php' ) . '</p>' .
 			'<p><strong>' . __( 'For more information:' ) . '</strong></p>' .
-			'<p>' . __( '<a href="https://wordpress.org/support/article/wordpress-editor/">Documentation on Writing and Editing Posts</a>' ) . '</p>' .
+			'<p>' . __( '<a href="https://codex.wordpress.org/Posts_Add_New_Screen">Documentation on Writing and Editing Posts</a>' ) . '</p>' .
 			'<p>' . __( '<a href="https://wordpress.org/support/">Support</a>' ) . '</p>'
 	);
 } elseif ( 'page' == $post_type ) {
@@ -311,8 +304,8 @@ if ( 'post' == $post_type ) {
 
 	get_current_screen()->set_help_sidebar(
 		'<p><strong>' . __( 'For more information:' ) . '</strong></p>' .
-			'<p>' . __( '<a href="https://wordpress.org/support/article/pages-add-new-screen/">Documentation on Adding New Pages</a>' ) . '</p>' .
-			'<p>' . __( '<a href="https://wordpress.org/support/article/pages-screen/">Documentation on Editing Pages</a>' ) . '</p>' .
+			'<p>' . __( '<a href="https://codex.wordpress.org/Pages_Add_New_Screen">Documentation on Adding New Pages</a>' ) . '</p>' .
+			'<p>' . __( '<a href="https://codex.wordpress.org/Pages_Screen#Editing_Individual_Pages">Documentation on Editing Pages</a>' ) . '</p>' .
 			'<p>' . __( '<a href="https://wordpress.org/support/">Support</a>' ) . '</p>'
 	);
 } elseif ( 'attachment' == $post_type ) {
@@ -321,7 +314,7 @@ if ( 'post' == $post_type ) {
 			'id'      => 'overview',
 			'title'   => __( 'Overview' ),
 			'content' =>
-				'<p>' . __( 'This screen allows you to edit fields for metadata in a file within the media library.' ) . '</p>' .
+				'<p>' . __( 'This screen allows you to edit four fields for metadata in a file within the media library.' ) . '</p>' .
 				'<p>' . __( 'For images only, you can click on Edit Image under the thumbnail to expand out an inline image editor with icons for cropping, rotating, or flipping the image as well as for undoing and redoing. The boxes on the right give you more options for scaling the image, for cropping it, and for cropping the thumbnail in a different way than you crop the original image. You can click on Help in those boxes to get more information.' ) . '</p>' .
 				'<p>' . __( 'Note that you crop the image by clicking on it (the Crop icon is already selected) and dragging the cropping frame to select the desired part. Then click Save to retain the cropping.' ) . '</p>' .
 				'<p>' . __( 'Remember to click Update Media to save metadata entered or changed.' ) . '</p>',
@@ -330,14 +323,14 @@ if ( 'post' == $post_type ) {
 
 	get_current_screen()->set_help_sidebar(
 		'<p><strong>' . __( 'For more information:' ) . '</strong></p>' .
-		'<p>' . __( '<a href="https://wordpress.org/support/article/edit-media/">Documentation on Edit Media</a>' ) . '</p>' .
+		'<p>' . __( '<a href="https://codex.wordpress.org/Media_Add_New_Screen#Edit_Media">Documentation on Edit Media</a>' ) . '</p>' .
 		'<p>' . __( '<a href="https://wordpress.org/support/">Support</a>' ) . '</p>'
 	);
 }
 
 if ( 'post' == $post_type || 'page' == $post_type ) {
 	$inserting_media  = '<p>' . __( 'You can upload and insert media (images, audio, documents, etc.) by clicking the Add Media button. You can select from the images and files already uploaded to the Media Library, or upload new media to add to your page or post. To create an image gallery, select the images to add and click the &#8220;Create a new gallery&#8221; button.' ) . '</p>';
-	$inserting_media .= '<p>' . __( 'You can also embed media from many popular websites including Twitter, YouTube, Flickr and others by pasting the media URL on its own line into the content of your post/page. <a href="https://wordpress.org/support/article/embeds/">Learn more about embeds</a>.' ) . '</p>';
+	$inserting_media .= '<p>' . __( 'You can also embed media from many popular websites including Twitter, YouTube, Flickr and others by pasting the media URL on its own line into the content of your post/page. Please refer to the Codex to <a href="https://codex.wordpress.org/Embeds">learn more about embeds</a>.' ) . '</p>';
 
 	get_current_screen()->add_help_tab(
 		array(
@@ -355,7 +348,7 @@ if ( 'post' == $post_type ) {
 	'</li>';
 
 	if ( current_theme_supports( 'post-formats' ) && post_type_supports( 'post', 'post-formats' ) ) {
-		$publish_box .= '<li>' . __( '<strong>Format</strong> &mdash; Post Formats designate how your theme will display a specific post. For example, you could have a <em>standard</em> blog post with a title and paragraphs, or a short <em>aside</em> that omits the title and contains a short text blurb. Your theme could enable all or some of 10 possible formats. <a href="https://wordpress.org/support/article/post-formats/#supported-formats">Learn more about each post format</a>.' ) . '</li>';
+		$publish_box .= '<li>' . __( '<strong>Format</strong> &mdash; Post Formats designate how your theme will display a specific post. For example, you could have a <em>standard</em> blog post with a title and paragraphs, or a short <em>aside</em> that omits the title and contains a short text blurb. Please refer to the Codex for <a href="https://codex.wordpress.org/Post_Formats#Supported_Formats">descriptions of each post format</a>. Your theme could enable all or some of 10 possible formats.' ) . '</li>';
 	}
 
 	if ( current_theme_supports( 'post-thumbnails' ) && post_type_supports( 'post', 'thumbnail' ) ) {
@@ -583,8 +576,7 @@ if ( post_type_supports( $post_type, 'editor' ) ) {
 	<?php
 	if ( 'auto-draft' != $post->post_status ) {
 		echo '<span id="last-edit">';
-		$last_user = get_userdata( get_post_meta( $post_ID, '_edit_last', true ) );
-		if ( $last_user ) {
+		if ( $last_user = get_userdata( get_post_meta( $post_ID, '_edit_last', true ) ) ) {
 			/* translators: 1: Name of most recent post author, 2: Post edited date, 3: Post edited time */
 			printf( __( 'Last edited by %1$s on %2$s at %3$s' ), esc_html( $last_user->display_name ), mysql2date( __( 'F j, Y' ), $post->post_modified ), mysql2date( __( 'g:i a' ), $post->post_modified ) );
 		} else {

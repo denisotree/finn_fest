@@ -33,7 +33,7 @@ class WP_Filesystem_ftpsockets extends WP_Filesystem_Base {
 		$this->errors = new WP_Error();
 
 		// Check if possible to use ftp functions.
-		if ( ! include_once( ABSPATH . 'wp-admin/includes/class-ftp.php' ) ) {
+		if ( ! @include_once( ABSPATH . 'wp-admin/includes/class-ftp.php' ) ) {
 			return;
 		}
 		$this->ftp = new ftp();
@@ -136,8 +136,7 @@ class WP_Filesystem_ftpsockets extends WP_Filesystem_Base {
 
 		$temp = wp_tempnam( $file );
 
-		$temphandle = fopen( $temp, 'w+' );
-		if ( ! $temphandle ) {
+		if ( ! $temphandle = fopen( $temp, 'w+' ) ) {
 			unlink( $temp );
 			return false;
 		}
@@ -191,9 +190,8 @@ class WP_Filesystem_ftpsockets extends WP_Filesystem_Base {
 	 * @return bool True on success, false on failure.
 	 */
 	public function put_contents( $file, $contents, $mode = false ) {
-		$temp       = wp_tempnam( $file );
-		$temphandle = @fopen( $temp, 'w+' );
-		if ( ! $temphandle ) {
+		$temp = wp_tempnam( $file );
+		if ( ! $temphandle = @fopen( $temp, 'w+' ) ) {
 			unlink( $temp );
 			return false;
 		}

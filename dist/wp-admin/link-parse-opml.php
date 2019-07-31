@@ -31,7 +31,7 @@ global $opml;
  * @param string $tagName XML element name.
  * @param array $attrs XML element attributes.
  */
-function startElement( $parser, $tagName, $attrs ) { // phpcs:ignore WordPress.NamingConventions.ValidFunctionName.FunctionNameInvalid
+function startElement( $parser, $tagName, $attrs ) {
 	global $names, $urls, $targets, $descriptions, $feeds;
 
 	if ( 'OUTLINE' === $tagName ) {
@@ -68,7 +68,7 @@ function startElement( $parser, $tagName, $attrs ) { // phpcs:ignore WordPress.N
  * @param mixed $parser XML Parser resource.
  * @param string $tagName XML tag name.
  */
-function endElement( $parser, $tagName ) { // phpcs:ignore WordPress.NamingConventions.ValidFunctionName.FunctionNameInvalid
+function endElement( $parser, $tagName ) {
 	// Nothing to do.
 }
 

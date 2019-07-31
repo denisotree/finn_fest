@@ -98,8 +98,7 @@ function update_post_thumbnail_cache( $wp_query = null ) {
 
 	$thumb_ids = array();
 	foreach ( $wp_query->posts as $post ) {
-		$id = get_post_thumbnail_id( $post->ID );
-		if ( $id ) {
+		if ( $id = get_post_thumbnail_id( $post->ID ) ) {
 			$thumb_ids[] = $id;
 		}
 	}

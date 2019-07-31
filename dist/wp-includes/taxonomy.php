@@ -1376,7 +1376,6 @@ function term_exists( $term, $taxonomy = '', $parent = null ) {
 		}
 		$where = 't.term_id = %d';
 		if ( ! empty( $taxonomy ) ) {
-			// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber
 			return $wpdb->get_row( $wpdb->prepare( $tax_select . $where . ' AND tt.taxonomy = %s', $term, $taxonomy ), ARRAY_A );
 		} else {
 			return $wpdb->get_var( $wpdb->prepare( $select . $where, $term ) );
@@ -1404,21 +1403,17 @@ function term_exists( $term, $taxonomy = '', $parent = null ) {
 		$where_fields[]      = $taxonomy;
 		$else_where_fields[] = $taxonomy;
 
-		$result = $wpdb->get_row( $wpdb->prepare( "SELECT tt.term_id, tt.term_taxonomy_id FROM $wpdb->terms AS t INNER JOIN $wpdb->term_taxonomy as tt ON tt.term_id = t.term_id WHERE $where AND tt.taxonomy = %s $orderby $limit", $where_fields ), ARRAY_A );
-		if ( $result ) {
+		if ( $result = $wpdb->get_row( $wpdb->prepare( "SELECT tt.term_id, tt.term_taxonomy_id FROM $wpdb->terms AS t INNER JOIN $wpdb->term_taxonomy as tt ON tt.term_id = t.term_id WHERE $where AND tt.taxonomy = %s $orderby $limit", $where_fields ), ARRAY_A ) ) {
 			return $result;
 		}
 
 		return $wpdb->get_row( $wpdb->prepare( "SELECT tt.term_id, tt.term_taxonomy_id FROM $wpdb->terms AS t INNER JOIN $wpdb->term_taxonomy as tt ON tt.term_id = t.term_id WHERE $else_where AND tt.taxonomy = %s $orderby $limit", $else_where_fields ), ARRAY_A );
 	}
 
-	// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
-	$result = $wpdb->get_var( $wpdb->prepare( "SELECT term_id FROM $wpdb->terms as t WHERE $where $orderby $limit", $where_fields ) );
-	if ( $result ) {
+	if ( $result = $wpdb->get_var( $wpdb->prepare( "SELECT term_id FROM $wpdb->terms as t WHERE $where $orderby $limit", $where_fields ) ) ) {
 		return $result;
 	}
 
-	// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
 	return $wpdb->get_var( $wpdb->prepare( "SELECT term_id FROM $wpdb->terms as t WHERE $else_where $orderby $limit", $else_where_fields ) );
 }
 
@@ -1755,8 +1750,7 @@ function wp_delete_term( $term, $taxonomy, $args = array() ) {
 
 	$term = (int) $term;
 
-	$ids = term_exists( $term, $taxonomy );
-	if ( ! $ids ) {
+	if ( ! $ids = term_exists( $term, $taxonomy ) ) {
 		return false;
 	}
 	if ( is_wp_error( $ids ) ) {
@@ -2282,11 +2276,7 @@ function wp_insert_term( $term, $taxonomy, $args = array() ) {
 			'term_taxonomy_id' => $tt_id,
 		);
 	}
-
-	if ( false === $wpdb->insert( $wpdb->term_taxonomy, compact( 'term_id', 'taxonomy', 'description', 'parent' ) + array( 'count' => 0 ) ) ) {
-		return new WP_Error( 'db_insert_error', __( 'Could not insert term taxonomy into the database.' ), $wpdb->last_error );
-	}
-
+	$wpdb->insert( $wpdb->term_taxonomy, compact( 'term_id', 'taxonomy', 'description', 'parent' ) + array( 'count' => 0 ) );
 	$tt_id = (int) $wpdb->insert_id;
 
 	/*
@@ -2454,8 +2444,7 @@ function wp_set_object_terms( $object_id, $terms, $taxonomy, $append = false ) {
 			continue;
 		}
 
-		$term_info = term_exists( $term, $taxonomy );
-		if ( ! $term_info ) {
+		if ( ! $term_info = term_exists( $term, $taxonomy ) ) {
 			// Skip if a non-existent term ID is passed.
 			if ( is_int( $term ) ) {
 				continue;
@@ -2614,8 +2603,7 @@ function wp_remove_object_terms( $object_id, $terms, $taxonomy ) {
 			continue;
 		}
 
-		$term_info = term_exists( $term, $taxonomy );
-		if ( ! $term_info ) {
+		if ( ! $term_info = term_exists( $term, $taxonomy ) ) {
 			// Skip if a non-existent term ID is passed.
 			if ( is_int( $term ) ) {
 				continue;
@@ -3551,8 +3539,7 @@ function _get_term_children( $term_id, $terms, $taxonomy, &$ancestors = array() 
 
 			$ancestors[ $term->term_id ] = 1;
 
-			$children = _get_term_children( $term->term_id, $terms, $taxonomy, $ancestors );
-			if ( $children ) {
+			if ( $children = _get_term_children( $term->term_id, $terms, $taxonomy, $ancestors ) ) {
 				$term_list = array_merge( $term_list, $children );
 			}
 		}
@@ -3689,8 +3676,7 @@ function _update_post_term_count( $terms, $taxonomy ) {
 
 	$object_types = array_unique( $object_types );
 
-	$check_attachments = array_search( 'attachment', $object_types );
-	if ( false !== $check_attachments ) {
+	if ( false !== ( $check_attachments = array_search( 'attachment', $object_types ) ) ) {
 		unset( $object_types[ $check_attachments ] );
 		$check_attachments = true;
 	}
@@ -3708,7 +3694,6 @@ function _update_post_term_count( $terms, $taxonomy ) {
 		}
 
 		if ( $object_types ) {
-			// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.QuotedDynamicPlaceholderGeneration
 			$count += (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM $wpdb->term_relationships, $wpdb->posts WHERE $wpdb->posts.ID = $wpdb->term_relationships.object_id AND post_status = 'publish' AND post_type IN ('" . implode( "', '", $object_types ) . "') AND term_taxonomy_id = %d", $term ) );
 		}
 
@@ -3959,8 +3944,7 @@ function _wp_batch_split_terms() {
 
 	// Split term data recording is slow, so we do it just once, outside the loop.
 	$split_term_data    = get_option( '_split_terms', array() );
-	$skipped_first_term = array();
-	$taxonomies         = array();
+	$skipped_first_term = $taxonomies = array();
 	foreach ( $shared_tts as $shared_tt ) {
 		$term_id = intval( $shared_tt->term_id );
 
@@ -4295,9 +4279,9 @@ function the_taxonomies( $args = array() ) {
 		'after'  => '',
 	);
 
-	$parsed_args = wp_parse_args( $args, $defaults );
+	$r = wp_parse_args( $args, $defaults );
 
-	echo $parsed_args['before'] . join( $parsed_args['sep'], get_the_taxonomies( $parsed_args['post'], $parsed_args ) ) . $parsed_args['after'];
+	echo $r['before'] . join( $r['sep'], get_the_taxonomies( $r['post'], $r ) ) . $r['after'];
 }
 
 /**
@@ -4397,8 +4381,7 @@ function get_post_taxonomies( $post = 0 ) {
  * @return bool|WP_Error WP_Error on input error.
  */
 function is_object_in_term( $object_id, $taxonomy, $terms = null ) {
-	$object_id = (int) $object_id;
-	if ( ! $object_id ) {
+	if ( ! $object_id = (int) $object_id ) {
 		return new WP_Error( 'invalid_object', __( 'Invalid object ID.' ) );
 	}
 
@@ -4424,8 +4407,7 @@ function is_object_in_term( $object_id, $taxonomy, $terms = null ) {
 
 	$terms = (array) $terms;
 
-	$ints = array_filter( $terms, 'is_int' );
-	if ( $ints ) {
+	if ( $ints = array_filter( $terms, 'is_int' ) ) {
 		$strs = array_diff( $terms, $ints );
 	} else {
 		$strs =& $terms;
@@ -4572,8 +4554,7 @@ function wp_check_term_hierarchy_for_loops( $parent, $term_id, $taxonomy ) {
 	}
 
 	// Now look for larger loops.
-	$loop = wp_find_hierarchy_loop( 'wp_get_term_taxonomy_parent_id', $term_id, $parent, array( $taxonomy ) );
-	if ( ! $loop ) {
+	if ( ! $loop = wp_find_hierarchy_loop( 'wp_get_term_taxonomy_parent_id', $term_id, $parent, array( $taxonomy ) ) ) {
 		return $parent; // No loop
 	}
 

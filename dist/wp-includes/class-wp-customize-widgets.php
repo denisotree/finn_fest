@@ -333,10 +333,10 @@ final class WP_Customize_Widgets {
 	 */
 	public function customize_controls_init() {
 		/** This action is documented in wp-admin/includes/ajax-actions.php */
-		do_action( 'load-widgets.php' ); // phpcs:ignore WordPress.NamingConventions.ValidHookName.UseUnderscores
+		do_action( 'load-widgets.php' );
 
 		/** This action is documented in wp-admin/includes/ajax-actions.php */
-		do_action( 'widgets.php' ); // phpcs:ignore WordPress.NamingConventions.ValidHookName.UseUnderscores
+		do_action( 'widgets.php' );
 
 		/** This action is documented in wp-admin/widgets.php */
 		do_action( 'sidebar_admin_setup' );
@@ -643,7 +643,7 @@ final class WP_Customize_Widgets {
 	 */
 	public function print_styles() {
 		/** This action is documented in wp-admin/admin-header.php */
-		do_action( 'admin_print_styles-widgets.php' ); // phpcs:ignore WordPress.NamingConventions.ValidHookName.UseUnderscores
+		do_action( 'admin_print_styles-widgets.php' );
 
 		/** This action is documented in wp-admin/admin-header.php */
 		do_action( 'admin_print_styles' );
@@ -657,7 +657,7 @@ final class WP_Customize_Widgets {
 	 */
 	public function print_scripts() {
 		/** This action is documented in wp-admin/admin-header.php */
-		do_action( 'admin_print_scripts-widgets.php' ); // phpcs:ignore WordPress.NamingConventions.ValidHookName.UseUnderscores
+		do_action( 'admin_print_scripts-widgets.php' );
 
 		/** This action is documented in wp-admin/admin-header.php */
 		do_action( 'admin_print_scripts' );
@@ -860,13 +860,13 @@ final class WP_Customize_Widgets {
 	 */
 	public function print_footer_scripts() {
 		/** This action is documented in wp-admin/admin-footer.php */
-		do_action( 'admin_print_footer_scripts-widgets.php' ); // phpcs:ignore WordPress.NamingConventions.ValidHookName.UseUnderscores
+		do_action( 'admin_print_footer_scripts-widgets.php' );
 
 		/** This action is documented in wp-admin/admin-footer.php */
 		do_action( 'admin_print_footer_scripts' );
 
 		/** This action is documented in wp-admin/admin-footer.php */
-		do_action( 'admin_footer-widgets.php' ); // phpcs:ignore WordPress.NamingConventions.ValidHookName.UseUnderscores
+		do_action( 'admin_footer-widgets.php' );
 	}
 
 	/**
@@ -1438,13 +1438,11 @@ final class WP_Customize_Widgets {
 				$value                         = array();
 				$value[ $parsed_id['number'] ] = $instance;
 				$key                           = 'widget-' . $parsed_id['id_base'];
-				$_REQUEST[ $key ]              = wp_slash( $value );
-				$_POST[ $key ]                 = $_REQUEST[ $key ];
+				$_REQUEST[ $key ]              = $_POST[ $key ] = wp_slash( $value );
 				$added_input_vars[]            = $key;
 			} else {
 				foreach ( $instance as $key => $value ) {
-					$_REQUEST[ $key ]   = wp_slash( $value );
-					$_POST[ $key ]      = $_REQUEST[ $key ];
+					$_REQUEST[ $key ]   = $_POST[ $key ] = wp_slash( $value );
 					$added_input_vars[] = $key;
 				}
 			}
@@ -1538,10 +1536,10 @@ final class WP_Customize_Widgets {
 		}
 
 		/** This action is documented in wp-admin/includes/ajax-actions.php */
-		do_action( 'load-widgets.php' ); // phpcs:ignore WordPress.NamingConventions.ValidHookName.UseUnderscores
+		do_action( 'load-widgets.php' );
 
 		/** This action is documented in wp-admin/includes/ajax-actions.php */
-		do_action( 'widgets.php' ); // phpcs:ignore WordPress.NamingConventions.ValidHookName.UseUnderscores
+		do_action( 'widgets.php' );
 
 		/** This action is documented in wp-admin/widgets.php */
 		do_action( 'sidebar_admin_setup' );
@@ -1740,7 +1738,7 @@ final class WP_Customize_Widgets {
 	 * The current request's sidebar_instance_number context.
 	 *
 	 * @since 4.5.0
-	 * @var int|null
+	 * @var int
 	 */
 	protected $context_sidebar_instance_number;
 
@@ -1792,7 +1790,7 @@ final class WP_Customize_Widgets {
 	 * Current sidebar being rendered.
 	 *
 	 * @since 4.5.0
-	 * @var string|null
+	 * @var string
 	 */
 	protected $rendering_widget_id;
 
@@ -1800,7 +1798,7 @@ final class WP_Customize_Widgets {
 	 * Current widget being rendered.
 	 *
 	 * @since 4.5.0
-	 * @var string|null
+	 * @var string
 	 */
 	protected $rendering_sidebar_id;
 
@@ -1858,9 +1856,8 @@ final class WP_Customize_Widgets {
 
 		// Render the widget.
 		ob_start();
-		$this->rendering_sidebar_id = $context['sidebar_id'];
-		dynamic_sidebar( $this->rendering_sidebar_id );
-		$container = ob_get_clean();
+		dynamic_sidebar( $this->rendering_sidebar_id = $context['sidebar_id'] );
+		$container                                   = ob_get_clean();
 
 		// Reset variables for next partial render.
 		remove_filter( 'sidebars_widgets', $filter_callback, 1000 );
@@ -1971,7 +1968,7 @@ final class WP_Customize_Widgets {
 	 */
 	public function capture_filter_pre_update_option( $new_value, $option_name, $old_value ) {
 		if ( $this->is_option_capture_ignored( $option_name ) ) {
-			return $new_value;
+			return;
 		}
 
 		if ( ! isset( $this->_captured_options[ $option_name ] ) ) {

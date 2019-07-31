@@ -303,8 +303,7 @@ function get_theme_feature_list( $api = true ) {
 		return $features;
 	}
 
-	$feature_list = get_site_transient( 'wporg_theme_feature_list' );
-	if ( ! $feature_list ) {
+	if ( ! $feature_list = get_site_transient( 'wporg_theme_feature_list' ) ) {
 		set_site_transient( 'wporg_theme_feature_list', array(), 3 * HOUR_IN_SECONDS );
 	}
 
@@ -491,8 +490,7 @@ function themes_api( $action, $args = array() ) {
 		);
 
 		$http_url = $url;
-		$ssl      = wp_http_supports( array( 'ssl' ) );
-		if ( $ssl ) {
+		if ( $ssl = wp_http_supports( array( 'ssl' ) ) ) {
 			$url = set_url_scheme( $url, 'https' );
 		}
 
@@ -507,7 +505,7 @@ function themes_api( $action, $args = array() ) {
 					sprintf(
 						/* translators: %s: support forums URL */
 						__( 'An unexpected error occurred. Something may be wrong with WordPress.org or this server&#8217;s configuration. If you continue to have problems, please try the <a href="%s">support forums</a>.' ),
-						__( 'https://wordpress.org/support/forums/' )
+						__( 'https://wordpress.org/support/' )
 					) . ' ' . __( '(WordPress could not establish a secure connection to WordPress.org. Please contact your server administrator.)' ),
 					headers_sent() || WP_DEBUG ? E_USER_WARNING : E_USER_NOTICE
 				);
@@ -521,7 +519,7 @@ function themes_api( $action, $args = array() ) {
 				sprintf(
 					/* translators: %s: support forums URL */
 					__( 'An unexpected error occurred. Something may be wrong with WordPress.org or this server&#8217;s configuration. If you continue to have problems, please try the <a href="%s">support forums</a>.' ),
-					__( 'https://wordpress.org/support/forums/' )
+					__( 'https://wordpress.org/support/' )
 				),
 				$request->get_error_message()
 			);
@@ -536,7 +534,7 @@ function themes_api( $action, $args = array() ) {
 					sprintf(
 						/* translators: %s: support forums URL */
 						__( 'An unexpected error occurred. Something may be wrong with WordPress.org or this server&#8217;s configuration. If you continue to have problems, please try the <a href="%s">support forums</a>.' ),
-						__( 'https://wordpress.org/support/forums/' )
+						__( 'https://wordpress.org/support/' )
 					),
 					wp_remote_retrieve_body( $request )
 				);

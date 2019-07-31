@@ -492,9 +492,9 @@ function post_tags_meta_box( $post, $box ) {
 	} else {
 		$args = $box['args'];
 	}
-	$parsed_args           = wp_parse_args( $args, $defaults );
-	$tax_name              = esc_attr( $parsed_args['taxonomy'] );
-	$taxonomy              = get_taxonomy( $parsed_args['taxonomy'] );
+	$r                     = wp_parse_args( $args, $defaults );
+	$tax_name              = esc_attr( $r['taxonomy'] );
+	$taxonomy              = get_taxonomy( $r['taxonomy'] );
 	$user_can_assign_terms = current_user_can( $taxonomy->cap->assign_terms );
 	$comma                 = _x( ',', 'tag delimiter' );
 	$terms_to_edit         = get_terms_to_edit( $post->ID, $tax_name );
@@ -555,9 +555,9 @@ function post_categories_meta_box( $post, $box ) {
 	} else {
 		$args = $box['args'];
 	}
-	$parsed_args = wp_parse_args( $args, $defaults );
-	$tax_name    = esc_attr( $parsed_args['taxonomy'] );
-	$taxonomy    = get_taxonomy( $parsed_args['taxonomy'] );
+	$r        = wp_parse_args( $args, $defaults );
+	$tax_name = esc_attr( $r['taxonomy'] );
+	$taxonomy = get_taxonomy( $r['taxonomy'] );
 	?>
 	<div id="taxonomy-<?php echo $tax_name; ?>" class="categorydiv">
 		<ul id="<?php echo $tax_name; ?>-tabs" class="category-tabs">
@@ -663,9 +663,9 @@ function post_excerpt_meta_box( $post ) {
 <p>
 	<?php
 	printf(
-		/* translators: %s: Documentation URL */
+		/* translators: %s: Codex URL */
 		__( 'Excerpts are optional hand-crafted summaries of your content that can be used in your theme. <a href="%s">Learn more about manual excerpts</a>.' ),
-		__( 'https://wordpress.org/support/article/excerpt/' )
+		__( 'https://codex.wordpress.org/Excerpt' )
 	);
 	?>
 </p>
@@ -700,9 +700,9 @@ function post_trackback_meta_box( $post ) {
 <p>
 	<?php
 	printf(
-		/* translators: %s: Documentation URL */
+		/* translators: %s: Codex URL */
 		__( 'Trackbacks are a way to notify legacy blog systems that you&#8217;ve linked to them. If you link other WordPress sites, they&#8217;ll be notified automatically using <a href="%s">pingbacks</a>, no other action necessary.' ),
-		__( 'https://wordpress.org/support/article/introduction-to-blogging/#comments' )
+		__( 'https://codex.wordpress.org/Introduction_to_Blogging#Managing_Comments' )
 	);
 	?>
 </p>
@@ -737,9 +737,9 @@ function post_custom_meta_box( $post ) {
 <p>
 	<?php
 	printf(
-		/* translators: %s: Documentation URL */
+		/* translators: %s: Codex URL */
 		__( 'Custom fields can be used to add extra metadata to a post that you can <a href="%s">use in your theme</a>.' ),
-		__( 'https://wordpress.org/support/article/custom-fields/' )
+		__( 'https://codex.wordpress.org/Using_Custom_Fields' )
 	);
 	?>
 </p>
@@ -761,9 +761,9 @@ function post_comment_status_meta_box( $post ) {
 	<label for="ping_status" class="selectit"><input name="ping_status" type="checkbox" id="ping_status" value="open" <?php checked( $post->ping_status, 'open' ); ?> />
 		<?php
 		printf(
-			/* translators: %s: Documentation URL */
+			/* translators: %s: Codex URL */
 			__( 'Allow <a href="%s">trackbacks and pingbacks</a> on this page' ),
-			__( 'https://wordpress.org/support/article/introduction-to-blogging/#managing-comments' )
+			__( 'https://codex.wordpress.org/Introduction_to_Blogging#Managing_Comments' )
 		);
 		?>
 	</label>
@@ -775,7 +775,7 @@ function post_comment_status_meta_box( $post ) {
 	 *
 	 * @param WP_Post $post WP_Post object of the current post.
 	 */
-	do_action( 'post_comment_status_meta_box-options', $post );  // phpcs:ignore WordPress.NamingConventions.ValidHookName.UseUnderscores
+	do_action( 'post_comment_status_meta_box-options', $post );
 	?>
 </p>
 	<?php
@@ -804,7 +804,7 @@ function post_comment_meta_box_thead( $result ) {
 function post_comment_meta_box( $post ) {
 	wp_nonce_field( 'get-comments', 'add_comment_nonce', false );
 	?>
-	<p class="hide-if-no-js" id="add-new-comment"><button type="button" class="button" onclick="window.commentReply && commentReply.addcomment(<?php echo $post->ID; ?>);"><?php _e( 'Add Comment' ); ?></button></p>
+	<p class="hide-if-no-js" id="add-new-comment"><button type="button" class="button" onclick="window.commentReply && commentReply.addcomment(<?php echo $post->ID; ?>);"><?php _e( 'Add comment' ); ?></button></p>
 	<?php
 
 	$total         = get_comments(
@@ -1310,12 +1310,12 @@ function link_advanced_meta_box( $link ) {
 		<th scope="row"><label for="link_rating"><?php _e( 'Rating' ); ?></label></th>
 		<td><select name="link_rating" id="link_rating" size="1">
 		<?php
-		for ( $parsed_args = 0; $parsed_args <= 10; $parsed_args++ ) {
-			echo '<option value="' . $parsed_args . '"';
-			if ( isset( $link->link_rating ) && $link->link_rating == $parsed_args ) {
+		for ( $r = 0; $r <= 10; $r++ ) {
+			echo '<option value="' . $r . '"';
+			if ( isset( $link->link_rating ) && $link->link_rating == $r ) {
 				echo ' selected="selected"';
 			}
-			echo( '>' . $parsed_args . '</option>' );
+			echo( '>' . $r . '</option>' );
 		}
 		?>
 		</select>&nbsp;<?php _e( '(Leave at 0 for no rating.)' ); ?>

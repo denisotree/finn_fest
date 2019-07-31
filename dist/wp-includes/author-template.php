@@ -50,7 +50,7 @@ function get_the_author( $deprecated = '' ) {
  *
  * @since 0.71
  * @see get_the_author()
- * @link https://developer.wordpress.org/reference/functions/the_author/
+ * @link https://codex.wordpress.org/Template_Tags/the_author
  *
  * @param string $deprecated      Deprecated.
  * @param bool   $deprecated_echo Deprecated. Use get_the_author(). Echo the string or return it.
@@ -246,7 +246,7 @@ function get_the_author_link() {
  * If the author has a home page set, echo an HTML link, otherwise just echo the
  * author's name.
  *
- * @link https://developer.wordpress.org/reference/functions/the_author_link/
+ * @link https://codex.wordpress.org/Template_Tags/the_author_link
  *
  * @since 2.1.0
  */
@@ -272,7 +272,7 @@ function get_the_author_posts() {
 /**
  * Display the number of posts by the author of the current post.
  *
- * @link https://developer.wordpress.org/reference/functions/the_author_posts/
+ * @link https://codex.wordpress.org/Template_Tags/the_author_posts
  * @since 0.71
  */
 function the_author_posts() {
@@ -376,7 +376,7 @@ function get_author_posts_url( $author_id, $author_nicename = '' ) {
 /**
  * List all the authors of the site, with several options available.
  *
- * @link https://developer.wordpress.org/reference/functions/wp_list_authors/
+ * @link https://codex.wordpress.org/Template_Tags/wp_list_authors
  *
  * @since 1.2.0
  *
@@ -541,8 +541,7 @@ function wp_list_authors( $args = '' ) {
 function is_multi_author() {
 	global $wpdb;
 
-	$is_multi_author = get_transient( 'is_multi_author' );
-	if ( false === $is_multi_author ) {
+	if ( false === ( $is_multi_author = get_transient( 'is_multi_author' ) ) ) {
 		$rows            = (array) $wpdb->get_col( "SELECT DISTINCT post_author FROM $wpdb->posts WHERE post_type = 'post' AND post_status = 'publish' LIMIT 2" );
 		$is_multi_author = 1 < count( $rows ) ? 1 : 0;
 		set_transient( 'is_multi_author', $is_multi_author );
@@ -564,6 +563,6 @@ function is_multi_author() {
  * @since 3.2.0
  * @access private
  */
-function __clear_multi_author_cache() { //phpcs:ignore WordPress.NamingConventions.ValidFunctionName.FunctionDoubleUnderscore
+function __clear_multi_author_cache() {
 	delete_transient( 'is_multi_author' );
 }

@@ -7,10 +7,11 @@ $template_path = get_template_directory_uri();
 <div class="container-fluid container-fluid__header-banner slide-img-0">
     <div class="slider-banner__items">
         <?php
+        if (!is_null($slides)) {
         foreach($slides as $item) {
             ?>
             <div class="slider-banner__item slider-banner__item-0" style="background: url('<?= $item['slide'] ?>') center no-repeat; background-size: cover;"></div>
-        <?php } ?>
+        <?php } }?>
     </div>
     
     <div class="container container__banner">

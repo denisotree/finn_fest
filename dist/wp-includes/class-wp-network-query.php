@@ -268,8 +268,7 @@ class WP_Network_Query {
 		// Fetch full network objects from the primed cache.
 		$_networks = array();
 		foreach ( $network_ids as $network_id ) {
-			$_network = get_network( $network_id );
-			if ( $_network ) {
+			if ( $_network = get_network( $network_id ) ) {
 				$_networks[] = $_network;
 			}
 		}

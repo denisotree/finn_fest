@@ -451,7 +451,7 @@ class WP_List_Table {
 			 *
 			 * @param string[] $actions An array of the available bulk actions.
 			 */
-			$this->_actions = apply_filters( "bulk_actions-{$this->screen->id}", $this->_actions );  // phpcs:ignore WordPress.NamingConventions.ValidHookName.UseUnderscores
+			$this->_actions = apply_filters( "bulk_actions-{$this->screen->id}", $this->_actions );
 			$two            = '';
 		} else {
 			$two = '2';
@@ -804,10 +804,7 @@ class WP_List_Table {
 		$total_pages_before = '<span class="paging-input">';
 		$total_pages_after  = '</span></span>';
 
-		$disable_first = false;
-		$disable_last  = false;
-		$disable_prev  = false;
-		$disable_next  = false;
+		$disable_first = $disable_last = $disable_prev = $disable_next = false;
 
 		if ( $current == 1 ) {
 			$disable_first = true;

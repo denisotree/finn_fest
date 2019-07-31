@@ -46,14 +46,14 @@ switch ( $action ) {
 				'id'      => 'overview',
 				'title'   => __( 'Overview' ),
 				'content' =>
-					'<p>' . __( 'You can edit the information left in a comment if needed. This is often useful when you notice that a commenter has made a typographical error.' ) . '</p>' .
-					'<p>' . __( 'You can also moderate the comment from this screen using the Status box, where you can also change the timestamp of the comment.' ) . '</p>',
+					  '<p>' . __( 'You can edit the information left in a comment if needed. This is often useful when you notice that a commenter has made a typographical error.' ) . '</p>' .
+					  '<p>' . __( 'You can also moderate the comment from this screen using the Status box, where you can also change the timestamp of the comment.' ) . '</p>',
 			)
 		);
 
 		get_current_screen()->set_help_sidebar(
 			'<p><strong>' . __( 'For more information:' ) . '</strong></p>' .
-			'<p>' . __( '<a href="https://wordpress.org/support/article/comments-screen/">Documentation on Comments</a>' ) . '</p>' .
+			'<p>' . __( '<a href="https://codex.wordpress.org/Administration_Screens#Comments">Documentation on Comments</a>' ) . '</p>' .
 			'<p>' . __( '<a href="https://wordpress.org/support/">Support</a>' ) . '</p>'
 		);
 
@@ -62,8 +62,7 @@ switch ( $action ) {
 
 		$comment_id = absint( $_GET['c'] );
 
-		$comment = get_comment( $comment_id );
-		if ( ! $comment ) {
+		if ( ! $comment = get_comment( $comment_id ) ) {
 			comment_footer_die( __( 'Invalid comment ID.' ) . sprintf( ' <a href="%s">' . __( 'Go back' ) . '</a>.', 'javascript:history.go(-1)' ) );
 		}
 
@@ -89,8 +88,7 @@ switch ( $action ) {
 
 		$comment_id = absint( $_GET['c'] );
 
-		$comment = get_comment( $comment_id );
-		if ( ! $comment ) {
+		if ( ! $comment = get_comment( $comment_id ) ) {
 			wp_redirect( admin_url( 'edit-comments.php?error=1' ) );
 			die();
 		}
@@ -262,8 +260,7 @@ switch ( $action ) {
 
 		$noredir = isset( $_REQUEST['noredir'] );
 
-		$comment = get_comment( $comment_id );
-		if ( ! $comment ) {
+		if ( ! $comment = get_comment( $comment_id ) ) {
 			comment_footer_die( __( 'Invalid comment ID.' ) . sprintf( ' <a href="%s">' . __( 'Go back' ) . '</a>.', 'edit-comments.php' ) );
 		}
 		if ( ! current_user_can( 'edit_comment', $comment->comment_ID ) ) {

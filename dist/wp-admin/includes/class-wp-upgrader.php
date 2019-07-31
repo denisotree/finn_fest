@@ -185,8 +185,7 @@ class WP_Upgrader {
 	public function fs_connect( $directories = array(), $allow_relaxed_file_ownership = false ) {
 		global $wp_filesystem;
 
-		$credentials = $this->skin->request_filesystem_credentials( false, $directories[0], $allow_relaxed_file_ownership );
-		if ( false === $credentials ) {
+		if ( false === ( $credentials = $this->skin->request_filesystem_credentials( false, $directories[0], $allow_relaxed_file_ownership ) ) ) {
 			return false;
 		}
 
@@ -465,7 +464,7 @@ class WP_Upgrader {
 		$destination       = $args['destination'];
 		$clear_destination = $args['clear_destination'];
 
-		set_time_limit( 300 );
+		@set_time_limit( 300 );
 
 		if ( empty( $source ) || empty( $destination ) ) {
 			return new WP_Error( 'bad_request', $this->strings['bad_request'] );

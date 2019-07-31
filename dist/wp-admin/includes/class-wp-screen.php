@@ -202,8 +202,7 @@ final class WP_Screen {
 			return $hook_name;
 		}
 
-		$post_type       = null;
-		$taxonomy        = null;
+		$post_type       = $taxonomy = null;
 		$in_admin        = false;
 		$action          = '';
 		$is_block_editor = false;
@@ -1016,10 +1015,7 @@ final class WP_Screen {
 			)
 		);
 
-		$wrapper_start = '';
-		$wrapper_end   = '';
-		$form_start    = '';
-		$form_end      = '';
+		$wrapper_start = $wrapper_end = $form_start = $form_end = '';
 
 		// Output optional wrapper.
 		if ( $options['wrap'] ) {

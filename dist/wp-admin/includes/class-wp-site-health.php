@@ -130,7 +130,7 @@ class WP_Site_Health {
 				$mysql_server_type = mysql_get_server_info( $wpdb->dbh );
 			}
 
-			$this->mysql_server_version = $wpdb->db_version();
+			$this->mysql_server_version = $wpdb->get_var( 'SELECT VERSION()' );
 		}
 
 		$this->health_check_mysql_rec_version = '5.6';
@@ -277,7 +277,7 @@ class WP_Site_Health {
 	 */
 	public function get_test_plugin_version() {
 		$result = array(
-			'label'       => __( 'Your plugins are all up to date' ),
+			'label'       => __( 'Your plugins are up to date' ),
 			'status'      => 'good',
 			'badge'       => array(
 				'label' => __( 'Security' ),
@@ -409,7 +409,7 @@ class WP_Site_Health {
 	 */
 	public function get_test_theme_version() {
 		$result = array(
-			'label'       => __( 'Your themes are all up to date' ),
+			'label'       => __( 'Your themes are up to date' ),
 			'status'      => 'good',
 			'badge'       => array(
 				'label' => __( 'Security' ),
@@ -946,7 +946,7 @@ class WP_Site_Health {
 				'<p><a href="%s" target="_blank" rel="noopener noreferrer">%s <span class="screen-reader-text">%s</span><span aria-hidden="true" class="dashicons dashicons-external"></span></a></p>',
 				/* translators: Localized version of WordPress requirements if one exists. */
 				esc_url( __( 'https://wordpress.org/about/requirements/' ) ),
-				__( 'Learn more about what WordPress requires to run.' ),
+				__( 'Read more about what WordPress requires to run.' ),
 				/* translators: accessibility text */
 				__( '(opens in a new tab)' )
 			),
@@ -1217,7 +1217,7 @@ class WP_Site_Health {
 				'<p><a href="%s" target="_blank" rel="noopener noreferrer">%s <span class="screen-reader-text">%s</span><span aria-hidden="true" class="dashicons dashicons-external"></span></a></p>',
 				/* translators: Documentation explaining debugging in WordPress. */
 				esc_url( __( 'https://wordpress.org/support/article/debugging-in-wordpress/' ) ),
-				__( 'Learn more about debugging in WordPress.' ),
+				__( 'Read about debugging in WordPress.' ),
 				/* translators: accessibility text */
 				__( '(opens in a new tab)' )
 			),
@@ -1286,7 +1286,7 @@ class WP_Site_Health {
 				'<p><a href="%s" target="_blank" rel="noopener noreferrer">%s <span class="screen-reader-text">%s</span><span aria-hidden="true" class="dashicons dashicons-external"></span></a></p>',
 				/* translators: Documentation explaining HTTPS and why it should be used. */
 				esc_url( __( 'https://wordpress.org/support/article/why-should-i-use-https/' ) ),
-				__( 'Learn more about why you should use HTTPS' ),
+				__( 'Read more about why you should use HTTPS' ),
 				/* translators: accessibility text */
 				__( '(opens in a new tab)' )
 			),

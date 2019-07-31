@@ -498,8 +498,7 @@ class WP_REST_Users_Controller extends WP_REST_Controller {
 					foreach ( $messages as $message ) {
 						$error->add( $code, $message );
 					}
-					$error_data = $error->get_error_data( $code );
-					if ( $error_data ) {
+					if ( $error_data = $error->get_error_data( $code ) ) {
 						$error->add_data( $error_data, $code );
 					}
 				}
@@ -926,7 +925,7 @@ class WP_REST_Users_Controller extends WP_REST_Controller {
 		}
 
 		if ( in_array( 'registered_date', $fields, true ) ) {
-			$data['registered_date'] = gmdate( 'c', strtotime( $user->user_registered ) );
+			$data['registered_date'] = date( 'c', strtotime( $user->user_registered ) );
 		}
 
 		if ( in_array( 'capabilities', $fields, true ) ) {
@@ -938,7 +937,7 @@ class WP_REST_Users_Controller extends WP_REST_Controller {
 		}
 
 		if ( in_array( 'avatar_urls', $fields, true ) ) {
-			$data['avatar_urls'] = rest_get_avatar_urls( $user );
+			$data['avatar_urls'] = rest_get_avatar_urls( $user->user_email );
 		}
 
 		if ( in_array( 'meta', $fields, true ) ) {

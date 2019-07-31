@@ -71,8 +71,8 @@ unset( $help );
 
 get_current_screen()->set_help_sidebar(
 	'<p><strong>' . __( 'For more information:' ) . '</strong></p>' .
-	'<p>' . __( '<a href="https://wordpress.org/support/article/users-screen/">Documentation on Managing Users</a>' ) . '</p>' .
-	'<p>' . __( '<a href="https://wordpress.org/support/article/roles-and-capabilities/">Descriptions of Roles and Capabilities</a>' ) . '</p>' .
+	'<p>' . __( '<a href="https://codex.wordpress.org/Users_Screen">Documentation on Managing Users</a>' ) . '</p>' .
+	'<p>' . __( '<a href="https://codex.wordpress.org/Roles_and_Capabilities">Descriptions of Roles and Capabilities</a>' ) . '</p>' .
 	'<p>' . __( '<a href="https://wordpress.org/support/">Support</a>' ) . '</p>'
 );
 
@@ -454,7 +454,7 @@ switch ( $wp_list_table->current_action() ) {
 			$sendback = wp_get_referer();
 
 			/** This action is documented in wp-admin/edit-comments.php */
-			$sendback = apply_filters( 'handle_bulk_actions-' . get_current_screen()->id, $sendback, $wp_list_table->current_action(), $userids ); // phpcs:ignore WordPress.NamingConventions.ValidHookName.UseUnderscores
+			$sendback = apply_filters( 'handle_bulk_actions-' . get_current_screen()->id, $sendback, $wp_list_table->current_action(), $userids );
 
 			wp_safe_redirect( $sendback );
 			exit;
@@ -483,24 +483,21 @@ switch ( $wp_list_table->current_action() ) {
 					$messages[] = '<div id="message" class="updated notice is-dismissible"><p>' . sprintf( $message, number_format_i18n( $delete_count ) ) . '</p></div>';
 					break;
 				case 'add':
-					$message = __( 'New user created.' );
-
-					$user_id = isset( $_GET['id'] ) ? $_GET['id'] : false;
-					if ( $user_id && current_user_can( 'edit_user', $user_id ) ) {
-						$message .= sprintf(
-							' <a href="%s">%s</a>',
+					if ( isset( $_GET['id'] ) && ( $user_id = $_GET['id'] ) && current_user_can( 'edit_user', $user_id ) ) {
+						/* translators: %s: edit page url */
+						$messages[] = '<div id="message" class="updated notice is-dismissible"><p>' . sprintf(
+							__( 'New user created. <a href="%s">Edit user</a>' ),
 							esc_url(
 								add_query_arg(
 									'wp_http_referer',
 									urlencode( wp_unslash( $_SERVER['REQUEST_URI'] ) ),
 									self_admin_url( 'user-edit.php?user_id=' . $user_id )
 								)
-							),
-							__( 'Edit user' )
-						);
+							)
+						) . '</p></div>';
+					} else {
+						$messages[] = '<div id="message" class="updated notice is-dismissible"><p>' . __( 'New user created.' ) . '</p></div>';
 					}
-
-					$messages[] = '<div id="message" class="updated notice is-dismissible"><p>' . $message . '</p></div>';
 					break;
 				case 'promote':
 					$messages[] = '<div id="message" class="updated notice is-dismissible"><p>' . __( 'Changed roles.' ) . '</p></div>';

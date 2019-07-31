@@ -24,7 +24,7 @@
  *
  * @since 4.4.0
  *
- * @link https://secure.php.net/manual/en/class.arrayaccess.php
+ * @see ArrayAccess
  */
 class WP_REST_Request implements ArrayAccess {
 
@@ -294,9 +294,7 @@ class WP_REST_Request implements ArrayAccess {
 	 *
 	 * @since 4.4.0
 	 *
-	 * @return array|null Map containing 'value' and 'parameters' keys
-	 *                    or null when no valid content-type header was
-	 *                    available.
+	 * @return array Map containing 'value' and 'parameters' keys.
 	 */
 	public function get_content_type() {
 		$value = $this->get_header( 'content-type' );
@@ -336,7 +334,7 @@ class WP_REST_Request implements ArrayAccess {
 		$order = array();
 
 		$content_type = $this->get_content_type();
-		if ( isset( $content_type['value'] ) && 'application/json' === $content_type['value'] ) {
+		if ( $content_type['value'] === 'application/json' ) {
 			$order[] = 'JSON';
 		}
 

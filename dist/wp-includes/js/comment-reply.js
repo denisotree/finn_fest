@@ -206,7 +206,7 @@ window.addComment = ( function( window ) {
 
 		var observerOptions = {
 			childList: true,
-			subtree: true
+			subTree: true
 		};
 
 		observer = new MutationObserver( handleChanges );

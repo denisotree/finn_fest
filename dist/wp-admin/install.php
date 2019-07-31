@@ -71,7 +71,10 @@ function display_header( $body_classes = '' ) {
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<meta name="robots" content="noindex,nofollow" />
 	<title><?php _e( 'WordPress &rsaquo; Installation' ); ?></title>
-	<?php wp_admin_css( 'install', true ); ?>
+	<?php
+		wp_admin_css( 'install', true );
+		wp_admin_css( 'dashicons', true );
+	?>
 </head>
 <body class="wp-core-ui<?php echo $body_classes; ?>">
 <p id="logo"><a href="<?php echo esc_url( __( 'https://wordpress.org/' ) ); ?>"><?php _e( 'WordPress' ); ?></a></p>
@@ -110,7 +113,7 @@ function display_setup_form( $error = null ) {
 <p class="message"><?php echo $error; ?></p>
 <?php } ?>
 <form id="setup" method="post" action="install.php?step=2" novalidate="novalidate">
-	<table class="form-table" role="presentation">
+	<table class="form-table">
 		<tr>
 			<th scope="row"><label for="weblog_title"><?php _e( 'Site Title' ); ?></label></th>
 			<td><input name="weblog_title" type="text" id="weblog_title" size="25" value="<?php echo esc_attr( $weblog_title ); ?>" /></td>
@@ -139,7 +142,7 @@ function display_setup_form( $error = null ) {
 				</label>
 			</th>
 			<td>
-				<div class="wp-pwd">
+				<div class="">
 					<?php $initial_password = isset( $_POST['admin_password'] ) ? stripslashes( $_POST['admin_password'] ) : wp_generate_password( 18 ); ?>
 					<input type="password" name="admin_password" id="pass1" class="regular-text" autocomplete="off" data-reveal="1" data-pw="<?php echo esc_attr( $initial_password ); ?>" aria-describedby="pass-strength-result" />
 					<button type="button" class="button wp-hide-pw hide-if-no-js" data-start-masked="<?php echo (int) isset( $_POST['admin_password'] ); ?>" data-toggle="0" aria-label="<?php esc_attr_e( 'Hide password' ); ?>">
@@ -304,16 +307,13 @@ $scripts_to_print = array( 'jquery' );
 
 switch ( $step ) {
 	case 0: // Step 0
-		if ( wp_can_install_language_pack() && empty( $language ) ) {
-			$languages = wp_get_available_translations();
-			if ( $languages ) {
-				$scripts_to_print[] = 'language-chooser';
-				display_header( 'language-chooser' );
-				echo '<form id="setup" method="post" action="?step=1">';
-				wp_install_language_form( $languages );
-				echo '</form>';
-				break;
-			}
+		if ( wp_can_install_language_pack() && empty( $language ) && ( $languages = wp_get_available_translations() ) ) {
+			$scripts_to_print[] = 'language-chooser';
+			display_header( 'language-chooser' );
+			echo '<form id="setup" method="post" action="?step=1">';
+			wp_install_language_form( $languages );
+			echo '</form>';
+			break;
 		}
 
 		// Deliberately fall through if we can't reach the translations API.

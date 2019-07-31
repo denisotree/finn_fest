@@ -100,33 +100,33 @@ function wp_terms_checklist( $post_id = 0, $args = array() ) {
 	 */
 	$params = apply_filters( 'wp_terms_checklist_args', $args, $post_id );
 
-	$parsed_args = wp_parse_args( $params, $defaults );
+	$r = wp_parse_args( $params, $defaults );
 
-	if ( empty( $parsed_args['walker'] ) || ! ( $parsed_args['walker'] instanceof Walker ) ) {
+	if ( empty( $r['walker'] ) || ! ( $r['walker'] instanceof Walker ) ) {
 		$walker = new Walker_Category_Checklist;
 	} else {
-		$walker = $parsed_args['walker'];
+		$walker = $r['walker'];
 	}
 
-	$taxonomy             = $parsed_args['taxonomy'];
-	$descendants_and_self = (int) $parsed_args['descendants_and_self'];
+	$taxonomy             = $r['taxonomy'];
+	$descendants_and_self = (int) $r['descendants_and_self'];
 
 	$args = array( 'taxonomy' => $taxonomy );
 
 	$tax              = get_taxonomy( $taxonomy );
 	$args['disabled'] = ! current_user_can( $tax->cap->assign_terms );
 
-	$args['list_only'] = ! empty( $parsed_args['list_only'] );
+	$args['list_only'] = ! empty( $r['list_only'] );
 
-	if ( is_array( $parsed_args['selected_cats'] ) ) {
-		$args['selected_cats'] = $parsed_args['selected_cats'];
+	if ( is_array( $r['selected_cats'] ) ) {
+		$args['selected_cats'] = $r['selected_cats'];
 	} elseif ( $post_id ) {
 		$args['selected_cats'] = wp_get_object_terms( $post_id, $taxonomy, array_merge( $args, array( 'fields' => 'ids' ) ) );
 	} else {
 		$args['selected_cats'] = array();
 	}
-	if ( is_array( $parsed_args['popular_cats'] ) ) {
-		$args['popular_cats'] = $parsed_args['popular_cats'];
+	if ( is_array( $r['popular_cats'] ) ) {
+		$args['popular_cats'] = $r['popular_cats'];
 	} else {
 		$args['popular_cats'] = get_terms(
 			$taxonomy,
@@ -156,7 +156,7 @@ function wp_terms_checklist( $post_id = 0, $args = array() ) {
 
 	$output = '';
 
-	if ( $parsed_args['checked_ontop'] ) {
+	if ( $r['checked_ontop'] ) {
 		// Post process $categories rather than adding an exclude to the get_terms() query to keep the query the same across all posts (for any query cache)
 		$checked_categories = array();
 		$keys               = array_keys( $categories );
@@ -174,7 +174,7 @@ function wp_terms_checklist( $post_id = 0, $args = array() ) {
 	// Then the rest of them
 	$output .= call_user_func_array( array( $walker, 'walk' ), array( $categories, 0, $args ) );
 
-	if ( $parsed_args['echo'] ) {
+	if ( $r['echo'] ) {
 		echo $output;
 	}
 
@@ -1109,11 +1109,8 @@ function do_block_editor_incompatible_meta_box( $object, $box ) {
 	if ( empty( $plugins['classic-editor/classic-editor.php'] ) ) {
 		if ( current_user_can( 'install_plugins' ) ) {
 			echo '<p>';
-			printf(
-				/* translators: %s: A link to install the Classic Editor plugin. */
-				__( 'Please install the <a href="%s">Classic Editor plugin</a> to use this meta box.' ),
-				esc_url( wp_nonce_url( self_admin_url( 'plugin-install.php?tab=favorites&user=wordpressdotorg&save=0' ), 'save_wporg_username_' . get_current_user_id() ) )
-			);
+			/* translators: %s: A link to install the Classic Editor plugin. */
+			printf( __( 'Please install the <a href="%s">Classic Editor plugin</a> to use this meta box.' ), esc_url( self_admin_url( 'plugin-install.php?tab=featured' ) ) );
 			echo '</p>';
 		}
 	} elseif ( is_plugin_inactive( 'classic-editor/classic-editor.php' ) ) {
@@ -1125,13 +1122,7 @@ function do_block_editor_incompatible_meta_box( $object, $box ) {
 			echo '</p>';
 		}
 	} elseif ( $object instanceof WP_Post ) {
-		$edit_url = add_query_arg(
-			array(
-				'classic-editor'         => '',
-				'classic-editor__forget' => '',
-			),
-			get_edit_post_link( $object )
-		);
+		$edit_url = add_query_arg( 'classic-editor', '', get_edit_post_link( $object ) );
 		echo '<p>';
 		/* translators: %s: A link to use the Classic Editor plugin. */
 		printf( __( 'Please open the <a href="%s">classic editor</a> to use this meta box.' ), esc_url( $edit_url ) );
@@ -1221,8 +1212,7 @@ function do_meta_boxes( $screen, $context, $object ) {
 	printf( '<div id="%s-sortables" class="meta-box-sortables">', esc_attr( $context ) );
 
 	// Grab the ones the user has manually sorted. Pull them out of their previous context/priority and into the one the user chose
-	$sorted = get_user_option( "meta-box-order_$page" );
-	if ( ! $already_sorted && $sorted ) {
+	if ( ! $already_sorted && $sorted = get_user_option( "meta-box-order_$page" ) ) {
 		foreach ( $sorted as $box_context => $ids ) {
 			foreach ( explode( ',', $ids ) as $id ) {
 				if ( $id && 'dashboard_browser_nag' !== $id ) {
@@ -1615,7 +1605,7 @@ function do_settings_sections( $page ) {
 		if ( ! isset( $wp_settings_fields ) || ! isset( $wp_settings_fields[ $page ] ) || ! isset( $wp_settings_fields[ $page ][ $section['id'] ] ) ) {
 			continue;
 		}
-		echo '<table class="form-table" role="presentation">';
+		echo '<table class="form-table">';
 		do_settings_fields( $page, $section['id'] );
 		echo '</table>';
 	}
@@ -1910,7 +1900,7 @@ function iframe_header( $title = '', $deprecated = false ) {
 
 	$current_screen = get_current_screen();
 
-	header( 'Content-Type: ' . get_option( 'html_type' ) . '; charset=' . get_option( 'blog_charset' ) );
+	@header( 'Content-Type: ' . get_option( 'html_type' ) . '; charset=' . get_option( 'blog_charset' ) );
 	_wp_admin_html_begin();
 	?>
 <title><?php bloginfo( 'name' ); ?> &rsaquo; <?php echo $title; ?> &#8212; <?php _e( 'WordPress' ); ?></title>
@@ -1933,19 +1923,19 @@ var ajaxurl = '<?php echo admin_url( 'admin-ajax.php', 'relative' ); ?>',
 	do_action( 'admin_enqueue_scripts', $hook_suffix );
 
 	/** This action is documented in wp-admin/admin-header.php */
-	do_action( "admin_print_styles-$hook_suffix" );  // phpcs:ignore WordPress.NamingConventions.ValidHookName.UseUnderscores
+	do_action( "admin_print_styles-$hook_suffix" );
 
 	/** This action is documented in wp-admin/admin-header.php */
 	do_action( 'admin_print_styles' );
 
 	/** This action is documented in wp-admin/admin-header.php */
-	do_action( "admin_print_scripts-$hook_suffix" ); // phpcs:ignore WordPress.NamingConventions.ValidHookName.UseUnderscores
+	do_action( "admin_print_scripts-$hook_suffix" );
 
 	/** This action is documented in wp-admin/admin-header.php */
 	do_action( 'admin_print_scripts' );
 
 	/** This action is documented in wp-admin/admin-header.php */
-	do_action( "admin_head-$hook_suffix" ); // phpcs:ignore WordPress.NamingConventions.ValidHookName.UseUnderscores
+	do_action( "admin_head-$hook_suffix" );
 
 	/** This action is documented in wp-admin/admin-header.php */
 	do_action( 'admin_head' );
@@ -1959,16 +1949,20 @@ var ajaxurl = '<?php echo admin_url( 'admin-ajax.php', 'relative' ); ?>',
 	?>
 </head>
 	<?php
-	/**
-	 * @global string $body_id
-	 */
-	$admin_body_id = isset( $GLOBALS['body_id'] ) ? 'id="' . $GLOBALS['body_id'] . '" ' : '';
-
 	/** This filter is documented in wp-admin/admin-header.php */
 	$admin_body_classes = apply_filters( 'admin_body_class', '' );
 	$admin_body_classes = ltrim( $admin_body_classes . ' ' . $admin_body_class );
 	?>
-<body <?php echo $admin_body_id; ?>class="wp-admin wp-core-ui no-js iframe <?php echo $admin_body_classes; ?>">
+<body
+	<?php
+	/**
+	 * @global string $body_id
+	 */
+	if ( isset( $GLOBALS['body_id'] ) ) {
+		echo ' id="' . $GLOBALS['body_id'] . '"';
+	}
+	?>
+ class="wp-admin wp-core-ui no-js iframe <?php echo $admin_body_classes; ?>">
 <script type="text/javascript">
 (function(){
 var c = document.body.className;
@@ -2002,7 +1996,7 @@ function iframe_footer() {
 	do_action( 'admin_footer', $hook_suffix );
 
 	/** This action is documented in wp-admin/admin-footer.php */
-	do_action( "admin_print_footer_scripts-$hook_suffix" ); // phpcs:ignore WordPress.NamingConventions.ValidHookName.UseUnderscores
+	do_action( "admin_print_footer_scripts-$hook_suffix" );
 
 	/** This action is documented in wp-admin/admin-footer.php */
 	do_action( 'admin_print_footer_scripts' );
@@ -2333,7 +2327,7 @@ function _wp_admin_html_begin() {
 	$admin_html_class = ( is_admin_bar_showing() ) ? 'wp-toolbar' : '';
 
 	if ( $is_IE ) {
-		header( 'X-UA-Compatible: IE=edge' );
+		@header( 'X-UA-Compatible: IE=edge' );
 	}
 
 	?>
@@ -2441,19 +2435,19 @@ function _local_storage_notice() {
  * @return string Star rating HTML.
  */
 function wp_star_rating( $args = array() ) {
-	$defaults    = array(
+	$defaults = array(
 		'rating' => 0,
 		'type'   => 'rating',
 		'number' => 0,
 		'echo'   => true,
 	);
-	$parsed_args = wp_parse_args( $args, $defaults );
+	$r        = wp_parse_args( $args, $defaults );
 
 	// Non-English decimal places when the $rating is coming from a string
-	$rating = (float) str_replace( ',', '.', $parsed_args['rating'] );
+	$rating = (float) str_replace( ',', '.', $r['rating'] );
 
 	// Convert Percentage to star rating, 0..5 in .5 increments
-	if ( 'percent' === $parsed_args['type'] ) {
+	if ( 'percent' === $r['type'] ) {
 		$rating = round( $rating / 10, 0 ) / 2;
 	}
 
@@ -2462,10 +2456,10 @@ function wp_star_rating( $args = array() ) {
 	$half_stars  = ceil( $rating - $full_stars );
 	$empty_stars = 5 - $full_stars - $half_stars;
 
-	if ( $parsed_args['number'] ) {
+	if ( $r['number'] ) {
 		/* translators: 1: the rating, 2: the number of ratings */
-		$format = _n( '%1$s rating based on %2$s rating', '%1$s rating based on %2$s ratings', $parsed_args['number'] );
-		$title  = sprintf( $format, number_format_i18n( $rating, 1 ), number_format_i18n( $parsed_args['number'] ) );
+		$format = _n( '%1$s rating based on %2$s rating', '%1$s rating based on %2$s ratings', $r['number'] );
+		$title  = sprintf( $format, number_format_i18n( $rating, 1 ), number_format_i18n( $r['number'] ) );
 	} else {
 		/* translators: %s: the rating */
 		$title = sprintf( __( '%s rating' ), number_format_i18n( $rating, 1 ) );
@@ -2478,7 +2472,7 @@ function wp_star_rating( $args = array() ) {
 	$output .= str_repeat( '<div class="star star-empty" aria-hidden="true"></div>', $empty_stars );
 	$output .= '</div>';
 
-	if ( $parsed_args['echo'] ) {
+	if ( $r['echo'] ) {
 		echo $output;
 	}
 

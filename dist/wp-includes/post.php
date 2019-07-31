@@ -453,11 +453,8 @@ function get_attached_file( $attachment_id, $unfiltered = false ) {
 	$file = get_post_meta( $attachment_id, '_wp_attached_file', true );
 
 	// If the file is relative, prepend upload dir.
-	if ( $file && 0 !== strpos( $file, '/' ) && ! preg_match( '|^.:\\\|', $file ) ) {
-		$uploads = wp_get_upload_dir();
-		if ( false === $uploads['error'] ) {
-			$file = $uploads['basedir'] . "/$file";
-		}
+	if ( $file && 0 !== strpos( $file, '/' ) && ! preg_match( '|^.:\\\|', $file ) && ( ( $uploads = wp_get_upload_dir() ) && false === $uploads['error'] ) ) {
+		$file = $uploads['basedir'] . "/$file";
 	}
 
 	if ( $unfiltered ) {
@@ -502,8 +499,7 @@ function update_attached_file( $attachment_id, $file ) {
 	 */
 	$file = apply_filters( 'update_attached_file', $file, $attachment_id );
 
-	$file = _wp_relative_upload_path( $file );
-	if ( $file ) {
+	if ( $file = _wp_relative_upload_path( $file ) ) {
 		return update_post_meta( $attachment_id, '_wp_attached_file', $file );
 	} else {
 		return delete_post_meta( $attachment_id, '_wp_attached_file' );
@@ -613,15 +609,15 @@ function get_children( $args = '', $output = OBJECT ) {
 		'post_parent' => 0,
 	);
 
-	$parsed_args = wp_parse_args( $args, $defaults );
+	$r = wp_parse_args( $args, $defaults );
 
-	$children = get_posts( $parsed_args );
+	$children = get_posts( $r );
 
 	if ( ! $children ) {
 		return $kids;
 	}
 
-	if ( ! empty( $parsed_args['fields'] ) ) {
+	if ( ! empty( $r['fields'] ) ) {
 		return $children;
 	}
 
@@ -759,8 +755,7 @@ function get_post_ancestors( $post ) {
 
 	$ancestors = array();
 
-	$id          = $post->post_parent;
-	$ancestors[] = $id;
+	$id = $ancestors[] = $post->post_parent;
 
 	while ( $ancestor = get_post( $id ) ) {
 		// Loop detection: If the ancestor has been seen before, break.
@@ -768,8 +763,7 @@ function get_post_ancestors( $post ) {
 			break;
 		}
 
-		$id          = $ancestor->post_parent;
-		$ancestors[] = $id;
+		$id = $ancestors[] = $ancestor->post_parent;
 	}
 
 	return $ancestors;
@@ -1154,8 +1148,7 @@ function post_type_exists( $post_type ) {
  * @return string|false          Post type on success, false on failure.
  */
 function get_post_type( $post = null ) {
-	$post = get_post( $post );
-	if ( $post ) {
+	if ( $post = get_post( $post ) ) {
 		return $post->post_type;
 	}
 
@@ -1565,7 +1558,7 @@ function _post_type_meta_capabilities( $capabilities = null ) {
  *          by `$post_type_object->label`. Default is 'Posts' / 'Pages'.
  * - `singular_name` - Name for one object of this post type. Default is 'Post' / 'Page'.
  * - `add_new` - Default is 'Add New' for both hierarchical and non-hierarchical types.
- *             When internationalizing this string, please use a {@link https://developer.wordpress.org/plugins/internationalization/how-to-internationalize-your-plugin/#disambiguation-by-context gettext context}
+ *             When internationalizing this string, please use a {@link https://codex.wordpress.org/I18n_for_WordPress_Developers#Disambiguation_by_context gettext context}
  *             matching your post type. Example: `_x( 'Add New', 'product', 'textdomain' );`.
  * - `add_new_item` - Label for adding a new singular item. Default is 'Add New Post' / 'Add New Page'.
  * - `edit_item` - Label for editing a singular item. Default is 'Edit Post' / 'Edit Page'.
@@ -1749,7 +1742,7 @@ function _add_post_type_submenus() {
 }
 
 /**
- * Registers support of certain features for a post type.
+ * Register support of certain features for a post type.
  *
  * All core features are directly associated with a functional area of the edit
  * screen, such as the editor or a meta box. Features include: 'title', 'editor',
@@ -1760,16 +1753,6 @@ function _add_post_type_submenus() {
  * store revisions, and the 'comments' feature dictates whether the comments
  * count will show on the edit screen.
  *
- * Example usage:
- *
- *     add_post_type_support( 'my_post_type', 'comments' );
- *     add_post_type_support( 'my_post_type', array(
- *         'author', 'excerpt',
- *     ) );
- *     add_post_type_support( 'my_post_type', 'my_feature', array(
- *         'field' => 'value',
- *     ) );
- *
  * @since 3.0.0
  *
  * @global array $_wp_post_type_features
@@ -1777,17 +1760,16 @@ function _add_post_type_submenus() {
  * @param string       $post_type The post type for which to add the feature.
  * @param string|array $feature   The feature being added, accepts an array of
  *                                feature strings or a single string.
- * @param mixed        ...$args   Optional extra arguments to pass along with certain features.
  */
-function add_post_type_support( $post_type, $feature, ...$args ) {
+function add_post_type_support( $post_type, $feature ) {
 	global $_wp_post_type_features;
 
 	$features = (array) $feature;
 	foreach ( $features as $feature ) {
-		if ( $args ) {
-			$_wp_post_type_features[ $post_type ][ $feature ] = $args;
-		} else {
+		if ( func_num_args() == 2 ) {
 			$_wp_post_type_features[ $post_type ][ $feature ] = true;
+		} else {
+			$_wp_post_type_features[ $post_type ][ $feature ] = array_slice( func_get_args(), 2 );
 		}
 	}
 }
@@ -1954,29 +1936,29 @@ function get_posts( $args = null ) {
 		'suppress_filters' => true,
 	);
 
-	$parsed_args = wp_parse_args( $args, $defaults );
-	if ( empty( $parsed_args['post_status'] ) ) {
-		$parsed_args['post_status'] = ( 'attachment' == $parsed_args['post_type'] ) ? 'inherit' : 'publish';
+	$r = wp_parse_args( $args, $defaults );
+	if ( empty( $r['post_status'] ) ) {
+		$r['post_status'] = ( 'attachment' == $r['post_type'] ) ? 'inherit' : 'publish';
 	}
-	if ( ! empty( $parsed_args['numberposts'] ) && empty( $parsed_args['posts_per_page'] ) ) {
-		$parsed_args['posts_per_page'] = $parsed_args['numberposts'];
+	if ( ! empty( $r['numberposts'] ) && empty( $r['posts_per_page'] ) ) {
+		$r['posts_per_page'] = $r['numberposts'];
 	}
-	if ( ! empty( $parsed_args['category'] ) ) {
-		$parsed_args['cat'] = $parsed_args['category'];
+	if ( ! empty( $r['category'] ) ) {
+		$r['cat'] = $r['category'];
 	}
-	if ( ! empty( $parsed_args['include'] ) ) {
-		$incposts                      = wp_parse_id_list( $parsed_args['include'] );
-		$parsed_args['posts_per_page'] = count( $incposts );  // only the number of posts included
-		$parsed_args['post__in']       = $incposts;
-	} elseif ( ! empty( $parsed_args['exclude'] ) ) {
-		$parsed_args['post__not_in'] = wp_parse_id_list( $parsed_args['exclude'] );
+	if ( ! empty( $r['include'] ) ) {
+		$incposts            = wp_parse_id_list( $r['include'] );
+		$r['posts_per_page'] = count( $incposts );  // only the number of posts included
+		$r['post__in']       = $incposts;
+	} elseif ( ! empty( $r['exclude'] ) ) {
+		$r['post__not_in'] = wp_parse_id_list( $r['exclude'] );
 	}
 
-	$parsed_args['ignore_sticky_posts'] = true;
-	$parsed_args['no_found_rows']       = true;
+	$r['ignore_sticky_posts'] = true;
+	$r['no_found_rows']       = true;
 
 	$get_posts = new WP_Query;
-	return $get_posts->query( $parsed_args );
+	return $get_posts->query( $r );
 
 }
 
@@ -2161,8 +2143,7 @@ function get_post_custom_keys( $post_id = 0 ) {
 		return;
 	}
 
-	$keys = array_keys( $custom );
-	if ( $keys ) {
+	if ( $keys = array_keys( $custom ) ) {
 		return $keys;
 	}
 }
@@ -2213,17 +2194,15 @@ function is_sticky( $post_id = 0 ) {
 
 	$stickies = get_option( 'sticky_posts' );
 
-	$is_sticky = is_array( $stickies ) && in_array( $post_id, $stickies );
+	if ( ! is_array( $stickies ) ) {
+		return false;
+	}
 
-	/**
-	 * Filters whether a post is sticky.
-	 *
-	 * @since 5.3.0
-	 *
-	 * @param bool $is_sticky Whether a post is sticky.
-	 * @param int  $post_id   Post ID.
-	 */
-	return apply_filters( 'is_sticky', $is_sticky, $post_id );
+	if ( in_array( $post_id, $stickies ) ) {
+		return true;
+	}
+
+	return false;
 }
 
 /**
@@ -2641,71 +2620,15 @@ function wp_count_attachments( $mime_type = '' ) {
  * Get default post mime types.
  *
  * @since 2.9.0
- * @since 5.3.0 Added the 'Documents', 'Spreadsheets', and 'Archives' mime type groups.
  *
  * @return array List of post mime types.
  */
 function get_post_mime_types() {
 	$post_mime_types = array(   //	array( adj, noun )
-		'image'       => array(
-			__( 'Images' ),
-			__( 'Manage Images' ),
-			_n_noop( 'Image <span class="count">(%s)</span>', 'Images <span class="count">(%s)</span>' ),
-		),
-		'audio'       => array(
-			__( 'Audio' ),
-			__( 'Manage Audio' ),
-			_n_noop( 'Audio <span class="count">(%s)</span>', 'Audio <span class="count">(%s)</span>' ),
-		),
-		'video'       => array(
-			__( 'Video' ),
-			__( 'Manage Video' ),
-			_n_noop( 'Video <span class="count">(%s)</span>', 'Video <span class="count">(%s)</span>' ),
-		),
-		'document'    => array(
-			__( 'Documents' ),
-			__( 'Manage Documents' ),
-			_n_noop( 'Document <span class="count">(%s)</span>', 'Documents <span class="count">(%s)</span>' ),
-		),
-		'spreadsheet' => array(
-			__( 'Spreadsheets' ),
-			__( 'Manage Spreadsheets' ),
-			_n_noop( 'Spreadsheet <span class="count">(%s)</span>', 'Spreadsheets <span class="count">(%s)</span>' ),
-		),
-		'archive'     => array(
-			__( 'Archives' ),
-			__( 'Manage Archives' ),
-			_n_noop( 'Archive <span class="count">(%s)</span>', 'Archives <span class="count">(%s)</span>' ),
-		),
+		'image' => array( __( 'Images' ), __( 'Manage Images' ), _n_noop( 'Image <span class="count">(%s)</span>', 'Images <span class="count">(%s)</span>' ) ),
+		'audio' => array( __( 'Audio' ), __( 'Manage Audio' ), _n_noop( 'Audio <span class="count">(%s)</span>', 'Audio <span class="count">(%s)</span>' ) ),
+		'video' => array( __( 'Video' ), __( 'Manage Video' ), _n_noop( 'Video <span class="count">(%s)</span>', 'Video <span class="count">(%s)</span>' ) ),
 	);
-
-	$ext_types  = wp_get_ext_types();
-	$mime_types = wp_get_mime_types();
-
-	foreach ( $post_mime_types as $group => $labels ) {
-		if ( in_array( $group, array( 'image', 'audio', 'video' ) ) ) {
-			continue;
-		}
-
-		if ( ! isset( $ext_types[ $group ] ) ) {
-			unset( $post_mime_types[ $group ] );
-			continue;
-		}
-
-		$group_mime_types = array();
-		foreach ( $ext_types[ $group ] as $extension ) {
-			foreach ( $mime_types as $exts => $mime ) {
-				if ( preg_match( '!^(' . $exts . ')$!i', $extension ) ) {
-					$group_mime_types[] = $mime;
-					break;
-				}
-			}
-		}
-		$group_mime_types = implode( ',', array_unique( $group_mime_types ) );
-
-		$post_mime_types[ $group_mime_types ] = $labels;
-		unset( $post_mime_types[ $group ] );
-	}
 
 	/**
 	 * Filters the default list of post mime types.
@@ -2992,9 +2915,9 @@ function _reset_front_page_settings_for_post( $post_id ) {
 	$post = get_post( $post_id );
 	if ( 'page' == $post->post_type ) {
 		/*
-		 * If the page is defined in option page_on_front or post_for_posts,
-		 * adjust the corresponding options.
-		 */
+		  * If the page is defined in option page_on_front or post_for_posts,
+		  * adjust the corresponding options.
+		  */
 		if ( get_option( 'page_on_front' ) == $post->ID ) {
 			update_option( 'show_on_front', 'posts' );
 			update_option( 'page_on_front', 0 );
@@ -3383,9 +3306,9 @@ function wp_get_recent_posts( $args = array(), $output = ARRAY_A ) {
 		'suppress_filters' => true,
 	);
 
-	$parsed_args = wp_parse_args( $args, $defaults );
+	$r = wp_parse_args( $args, $defaults );
 
-	$results = get_posts( $parsed_args );
+	$results = get_posts( $r );
 
 	// Backward compatibility. Prior to 3.1 expected posts to be returned in array.
 	if ( ARRAY_A == $output ) {
@@ -4117,8 +4040,7 @@ function wp_update_post( $postarr = array(), $wp_error = false ) {
 function wp_publish_post( $post ) {
 	global $wpdb;
 
-	$post = get_post( $post );
-	if ( ! $post ) {
+	if ( ! $post = get_post( $post ) ) {
 		return;
 	}
 
@@ -4294,26 +4216,22 @@ function wp_unique_post_slug( $slug, $post_ID, $post_status, $post_type, $post_p
 		// Prevent new post slugs that could result in URLs that conflict with date archives.
 		$post                        = get_post( $post_ID );
 		$conflicts_with_date_archive = false;
-		if ( 'post' === $post_type && ( ! $post || $post->post_name !== $slug ) && preg_match( '/^[0-9]+$/', $slug ) ) {
-			$slug_num = intval( $slug );
+		if ( 'post' === $post_type && ( ! $post || $post->post_name !== $slug ) && preg_match( '/^[0-9]+$/', $slug ) && $slug_num = intval( $slug ) ) {
+			$permastructs   = array_values( array_filter( explode( '/', get_option( 'permalink_structure' ) ) ) );
+			$postname_index = array_search( '%postname%', $permastructs );
 
-			if ( $slug_num ) {
-				$permastructs   = array_values( array_filter( explode( '/', get_option( 'permalink_structure' ) ) ) );
-				$postname_index = array_search( '%postname%', $permastructs );
-
-				/*
-				* Potential date clashes are as follows:
-				*
-				* - Any integer in the first permastruct position could be a year.
-				* - An integer between 1 and 12 that follows 'year' conflicts with 'monthnum'.
-				* - An integer between 1 and 31 that follows 'monthnum' conflicts with 'day'.
-				*/
-				if ( 0 === $postname_index ||
-					( $postname_index && '%year%' === $permastructs[ $postname_index - 1 ] && 13 > $slug_num ) ||
-					( $postname_index && '%monthnum%' === $permastructs[ $postname_index - 1 ] && 32 > $slug_num )
-				) {
-					$conflicts_with_date_archive = true;
-				}
+			/*
+			 * Potential date clashes are as follows:
+			 *
+			 * - Any integer in the first permastruct position could be a year.
+			 * - An integer between 1 and 12 that follows 'year' conflicts with 'monthnum'.
+			 * - An integer between 1 and 31 that follows 'monthnum' conflicts with 'day'.
+			 */
+			if ( 0 === $postname_index ||
+				( $postname_index && '%year%' === $permastructs[ $postname_index - 1 ] && 13 > $slug_num ) ||
+				( $postname_index && '%monthnum%' === $permastructs[ $postname_index - 1 ] && 32 > $slug_num )
+			) {
+				$conflicts_with_date_archive = true;
 			}
 		}
 
@@ -5113,21 +5031,21 @@ function get_pages( $args = array() ) {
 		'post_status'  => 'publish',
 	);
 
-	$parsed_args = wp_parse_args( $args, $defaults );
+	$r = wp_parse_args( $args, $defaults );
 
-	$number       = (int) $parsed_args['number'];
-	$offset       = (int) $parsed_args['offset'];
-	$child_of     = (int) $parsed_args['child_of'];
-	$hierarchical = $parsed_args['hierarchical'];
-	$exclude      = $parsed_args['exclude'];
-	$meta_key     = $parsed_args['meta_key'];
-	$meta_value   = $parsed_args['meta_value'];
-	$parent       = $parsed_args['parent'];
-	$post_status  = $parsed_args['post_status'];
+	$number       = (int) $r['number'];
+	$offset       = (int) $r['offset'];
+	$child_of     = (int) $r['child_of'];
+	$hierarchical = $r['hierarchical'];
+	$exclude      = $r['exclude'];
+	$meta_key     = $r['meta_key'];
+	$meta_value   = $r['meta_value'];
+	$parent       = $r['parent'];
+	$post_status  = $r['post_status'];
 
 	// Make sure the post type is hierarchical.
 	$hierarchical_post_types = get_post_types( array( 'hierarchical' => true ) );
-	if ( ! in_array( $parsed_args['post_type'], $hierarchical_post_types ) ) {
+	if ( ! in_array( $r['post_type'], $hierarchical_post_types ) ) {
 		return false;
 	}
 
@@ -5144,7 +5062,7 @@ function get_pages( $args = array() ) {
 	}
 
 	// $args can be whatever, only use the args defined in defaults to compute the key.
-	$key          = md5( serialize( wp_array_slice_assoc( $parsed_args, array_keys( $defaults ) ) ) );
+	$key          = md5( serialize( wp_array_slice_assoc( $r, array_keys( $defaults ) ) ) );
 	$last_changed = wp_cache_get_last_changed( 'posts' );
 
 	$cache_key = "get_pages:$key:$last_changed";
@@ -5153,19 +5071,19 @@ function get_pages( $args = array() ) {
 		// Convert to WP_Post instances.
 		$pages = array_map( 'get_post', $cache );
 		/** This filter is documented in wp-includes/post.php */
-		$pages = apply_filters( 'get_pages', $pages, $parsed_args );
+		$pages = apply_filters( 'get_pages', $pages, $r );
 		return $pages;
 	}
 
 	$inclusions = '';
-	if ( ! empty( $parsed_args['include'] ) ) {
+	if ( ! empty( $r['include'] ) ) {
 		$child_of     = 0; //ignore child_of, parent, exclude, meta_key, and meta_value params if using include
 		$parent       = -1;
 		$exclude      = '';
 		$meta_key     = '';
 		$meta_value   = '';
 		$hierarchical = false;
-		$incpages     = wp_parse_id_list( $parsed_args['include'] );
+		$incpages     = wp_parse_id_list( $r['include'] );
 		if ( ! empty( $incpages ) ) {
 			$inclusions = ' AND ID IN (' . implode( ',', $incpages ) . ')';
 		}
@@ -5180,8 +5098,8 @@ function get_pages( $args = array() ) {
 	}
 
 	$author_query = '';
-	if ( ! empty( $parsed_args['authors'] ) ) {
-		$post_authors = wp_parse_list( $parsed_args['authors'] );
+	if ( ! empty( $r['authors'] ) ) {
+		$post_authors = wp_parse_list( $r['authors'] );
 
 		if ( ! empty( $post_authors ) ) {
 			foreach ( $post_authors as $post_author ) {
@@ -5235,10 +5153,10 @@ function get_pages( $args = array() ) {
 	}
 
 	if ( 1 == count( $post_status ) ) {
-		$where_post_type = $wpdb->prepare( 'post_type = %s AND post_status = %s', $parsed_args['post_type'], reset( $post_status ) );
+		$where_post_type = $wpdb->prepare( 'post_type = %s AND post_status = %s', $r['post_type'], reset( $post_status ) );
 	} else {
 		$post_status     = implode( "', '", $post_status );
-		$where_post_type = $wpdb->prepare( "post_type = %s AND post_status IN ('$post_status')", $parsed_args['post_type'] );
+		$where_post_type = $wpdb->prepare( "post_type = %s AND post_status IN ('$post_status')", $r['post_type'] );
 	}
 
 	$orderby_array = array();
@@ -5263,7 +5181,7 @@ function get_pages( $args = array() ) {
 		'comment_count',
 	);
 
-	foreach ( explode( ',', $parsed_args['sort_column'] ) as $orderby ) {
+	foreach ( explode( ',', $r['sort_column'] ) as $orderby ) {
 		$orderby = trim( $orderby );
 		if ( ! in_array( $orderby, $allowed_keys ) ) {
 			continue;
@@ -5294,7 +5212,7 @@ function get_pages( $args = array() ) {
 	}
 	$sort_column = ! empty( $orderby_array ) ? implode( ',', $orderby_array ) : "$wpdb->posts.post_title";
 
-	$sort_order = strtoupper( $parsed_args['sort_order'] );
+	$sort_order = strtoupper( $r['sort_order'] );
 	if ( '' !== $sort_order && ! in_array( $sort_order, array( 'ASC', 'DESC' ) ) ) {
 		$sort_order = 'ASC';
 	}
@@ -5313,7 +5231,7 @@ function get_pages( $args = array() ) {
 		wp_cache_set( $cache_key, array(), 'posts' );
 
 		/** This filter is documented in wp-includes/post.php */
-		$pages = apply_filters( 'get_pages', array(), $parsed_args );
+		$pages = apply_filters( 'get_pages', array(), $r );
 		return $pages;
 	}
 
@@ -5330,8 +5248,8 @@ function get_pages( $args = array() ) {
 		$pages = get_page_children( $child_of, $pages );
 	}
 
-	if ( ! empty( $parsed_args['exclude_tree'] ) ) {
-		$exclude = wp_parse_id_list( $parsed_args['exclude_tree'] );
+	if ( ! empty( $r['exclude_tree'] ) ) {
+		$exclude = wp_parse_id_list( $r['exclude_tree'] );
 		foreach ( $exclude as $id ) {
 			$children = get_page_children( $id, $pages );
 			foreach ( $children as $child ) {
@@ -5363,9 +5281,9 @@ function get_pages( $args = array() ) {
 	 * @since 2.1.0
 	 *
 	 * @param array $pages List of pages to retrieve.
-	 * @param array $parsed_args     Array of get_pages() arguments.
+	 * @param array $r     Array of get_pages() arguments.
 	 */
-	return apply_filters( 'get_pages', $pages, $parsed_args );
+	return apply_filters( 'get_pages', $pages, $r );
 }
 
 //
@@ -5391,9 +5309,7 @@ function is_local_attachment( $url ) {
 	if ( strpos( $url, home_url( '/?attachment_id=' ) ) !== false ) {
 		return true;
 	}
-
-	$id = url_to_postid( $url );
-	if ( $id ) {
+	if ( $id = url_to_postid( $url ) ) {
 		$post = get_post( $id );
 		if ( 'attachment' == $post->post_type ) {
 			return true;
@@ -5617,8 +5533,7 @@ function wp_delete_attachment_files( $post_id, $meta, $backup_sizes, $file ) {
  */
 function wp_get_attachment_metadata( $attachment_id = 0, $unfiltered = false ) {
 	$attachment_id = (int) $attachment_id;
-	$post          = get_post( $attachment_id );
-	if ( ! $post ) {
+	if ( ! $post = get_post( $attachment_id ) ) {
 		return false;
 	}
 
@@ -5651,8 +5566,7 @@ function wp_get_attachment_metadata( $attachment_id = 0, $unfiltered = false ) {
  */
 function wp_update_attachment_metadata( $attachment_id, $data ) {
 	$attachment_id = (int) $attachment_id;
-	$post          = get_post( $attachment_id );
-	if ( ! $post ) {
+	if ( ! $post = get_post( $attachment_id ) ) {
 		return false;
 	}
 
@@ -5664,8 +5578,7 @@ function wp_update_attachment_metadata( $attachment_id, $data ) {
 	 * @param array $data          Array of updated attachment meta data.
 	 * @param int   $attachment_id Attachment post ID.
 	 */
-	$data = apply_filters( 'wp_update_attachment_metadata', $data, $post->ID );
-	if ( $data ) {
+	if ( $data = apply_filters( 'wp_update_attachment_metadata', $data, $post->ID ) ) {
 		return update_post_meta( $post->ID, '_wp_attachment_metadata', $data );
 	} else {
 		return delete_post_meta( $post->ID, '_wp_attachment_metadata' );
@@ -5684,8 +5597,7 @@ function wp_update_attachment_metadata( $attachment_id, $data ) {
  */
 function wp_get_attachment_url( $attachment_id = 0 ) {
 	$attachment_id = (int) $attachment_id;
-	$post          = get_post( $attachment_id );
-	if ( ! $post ) {
+	if ( ! $post = get_post( $attachment_id ) ) {
 		return false;
 	}
 
@@ -5695,11 +5607,9 @@ function wp_get_attachment_url( $attachment_id = 0 ) {
 
 	$url = '';
 	// Get attached file.
-	$file = get_post_meta( $post->ID, '_wp_attached_file', true );
-	if ( $file ) {
+	if ( $file = get_post_meta( $post->ID, '_wp_attached_file', true ) ) {
 		// Get upload directory.
-		$uploads = wp_get_upload_dir();
-		if ( $uploads && false === $uploads['error'] ) {
+		if ( ( $uploads = wp_get_upload_dir() ) && false === $uploads['error'] ) {
 			// Check that the upload base exists in the file location.
 			if ( 0 === strpos( $file, $uploads['basedir'] ) ) {
 				// Replace file location with url location.
@@ -5754,8 +5664,7 @@ function wp_get_attachment_url( $attachment_id = 0 ) {
  */
 function wp_get_attachment_caption( $post_id = 0 ) {
 	$post_id = (int) $post_id;
-	$post    = get_post( $post_id );
-	if ( ! $post ) {
+	if ( ! $post = get_post( $post_id ) ) {
 		return false;
 	}
 
@@ -5786,31 +5695,25 @@ function wp_get_attachment_caption( $post_id = 0 ) {
  */
 function wp_get_attachment_thumb_file( $post_id = 0 ) {
 	$post_id = (int) $post_id;
-	$post    = get_post( $post_id );
-	if ( ! $post ) {
+	if ( ! $post = get_post( $post_id ) ) {
 		return false;
 	}
-
-	$imagedata = wp_get_attachment_metadata( $post->ID );
-	if ( ! is_array( $imagedata ) ) {
+	if ( ! is_array( $imagedata = wp_get_attachment_metadata( $post->ID ) ) ) {
 		return false;
 	}
 
 	$file = get_attached_file( $post->ID );
 
-	if ( ! empty( $imagedata['thumb'] ) ) {
-		$thumbfile = str_replace( wp_basename( $file ), $imagedata['thumb'], $file );
-		if ( file_exists( $thumbfile ) ) {
-			/**
-			 * Filters the attachment thumbnail file path.
-			 *
-			 * @since 2.1.0
-			 *
-			 * @param string $thumbfile File path to the attachment thumbnail.
-			 * @param int    $post_id   Attachment ID.
-			 */
-			return apply_filters( 'wp_get_attachment_thumb_file', $thumbfile, $post->ID );
-		}
+	if ( ! empty( $imagedata['thumb'] ) && ( $thumbfile = str_replace( wp_basename( $file ), $imagedata['thumb'], $file ) ) && file_exists( $thumbfile ) ) {
+		/**
+		 * Filters the attachment thumbnail file path.
+		 *
+		 * @since 2.1.0
+		 *
+		 * @param string $thumbfile File path to the attachment thumbnail.
+		 * @param int    $post_id   Attachment ID.
+		 */
+		return apply_filters( 'wp_get_attachment_thumb_file', $thumbfile, $post->ID );
 	}
 	return false;
 }
@@ -5825,13 +5728,10 @@ function wp_get_attachment_thumb_file( $post_id = 0 ) {
  */
 function wp_get_attachment_thumb_url( $post_id = 0 ) {
 	$post_id = (int) $post_id;
-	$post    = get_post( $post_id );
-	if ( ! $post ) {
+	if ( ! $post = get_post( $post_id ) ) {
 		return false;
 	}
-
-	$url = wp_get_attachment_url( $post->ID );
-	if ( ! $url ) {
+	if ( ! $url = wp_get_attachment_url( $post->ID ) ) {
 		return false;
 	}
 
@@ -5840,8 +5740,7 @@ function wp_get_attachment_thumb_url( $post_id = 0 ) {
 		return $sized[0];
 	}
 
-	$thumb = wp_get_attachment_thumb_file( $post->ID );
-	if ( ! $thumb ) {
+	if ( ! $thumb = wp_get_attachment_thumb_file( $post->ID ) ) {
 		return false;
 	}
 
@@ -5868,13 +5767,11 @@ function wp_get_attachment_thumb_url( $post_id = 0 ) {
  * @return bool True if one of the accepted types, false otherwise.
  */
 function wp_attachment_is( $type, $post = null ) {
-	$post = get_post( $post );
-	if ( ! $post ) {
+	if ( ! $post = get_post( $post ) ) {
 		return false;
 	}
 
-	$file = get_attached_file( $post->ID );
-	if ( ! $file ) {
+	if ( ! $file = get_attached_file( $post->ID ) ) {
 		return false;
 	}
 
@@ -5945,15 +5842,13 @@ function wp_mime_type_icon( $mime = 0 ) {
 		$post_mimes = array();
 		if ( is_numeric( $mime ) ) {
 			$mime = (int) $mime;
-			$post = get_post( $mime );
-			if ( $post ) {
+			if ( $post = get_post( $mime ) ) {
 				$post_id = (int) $post->ID;
 				$file    = get_attached_file( $post_id );
 				$ext     = preg_replace( '/^.+?\.([^.]+)$/', '$1', $file );
 				if ( ! empty( $ext ) ) {
 					$post_mimes[] = $ext;
-					$ext_type     = wp_ext2type( $ext );
-					if ( $ext_type ) {
+					if ( $ext_type = wp_ext2type( $ext ) ) {
 						$post_mimes[] = $ext_type;
 					}
 				}
@@ -5999,8 +5894,7 @@ function wp_mime_type_icon( $mime = 0 ) {
 				$keys = array_keys( $dirs );
 				$dir  = array_shift( $keys );
 				$uri  = array_shift( $dirs );
-				$dh   = opendir( $dir );
-				if ( $dh ) {
+				if ( $dh = opendir( $dir ) ) {
 					while ( false !== $file = readdir( $dh ) ) {
 						$file = wp_basename( $file );
 						if ( substr( $file, 0, 1 ) == '.' ) {
@@ -6126,8 +6020,8 @@ function wp_check_for_changed_slugs( $post_id, $post, $post_before ) {
  * @param WP_Post $post_before The Previous Post Object
  */
 function wp_check_for_changed_dates( $post_id, $post, $post_before ) {
-	$previous_date = gmdate( 'Y-m-d', strtotime( $post_before->post_date ) );
-	$new_date      = gmdate( 'Y-m-d', strtotime( $post->post_date ) );
+	$previous_date = date( 'Y-m-d', strtotime( $post_before->post_date ) );
+	$new_date      = date( 'Y-m-d', strtotime( $post->post_date ) );
 	// Don't bother if it hasn't changed.
 	if ( $new_date == $previous_date ) {
 		return;
@@ -6207,8 +6101,7 @@ function get_posts_by_author_sql( $post_type, $full = true, $post_author = null,
 		 *
 		 * @param string $cap Capability.
 		 */
-		$cap = apply_filters( 'pub_priv_sql_capability', '' );
-		if ( ! $cap ) {
+		if ( ! $cap = apply_filters( 'pub_priv_sql_capability', '' ) ) {
 			$cap = current_user_can( $post_type_obj->cap->read_private_posts );
 		}
 
@@ -6382,7 +6275,7 @@ function _get_last_post_time( $timezone, $field, $post_type = 'any' ) {
 			$date = $wpdb->get_var( "SELECT post_{$field} FROM $wpdb->posts WHERE post_status = 'publish' AND post_type IN ({$post_types}) ORDER BY post_{$field}_gmt DESC LIMIT 1" );
 			break;
 		case 'server':
-			$add_seconds_server = gmdate( 'Z' );
+			$add_seconds_server = date( 'Z' );
 			$date               = $wpdb->get_var( "SELECT DATE_ADD(post_{$field}_gmt, INTERVAL '$add_seconds_server' SECOND) FROM $wpdb->posts WHERE post_status = 'publish' AND post_type IN ({$post_types}) ORDER BY post_{$field}_gmt DESC LIMIT 1" );
 			break;
 	}
@@ -6738,8 +6631,7 @@ function wp_check_post_hierarchy_for_loops( $post_parent, $post_ID ) {
 	}
 
 	// Now look for larger loops.
-	$loop = wp_find_hierarchy_loop( 'wp_get_post_parent_id', $post_ID, $post_parent );
-	if ( ! $loop ) {
+	if ( ! $loop = wp_find_hierarchy_loop( 'wp_get_post_parent_id', $post_ID, $post_parent ) ) {
 		return $post_parent; // No loop
 	}
 
@@ -6825,8 +6717,7 @@ function wp_delete_auto_drafts() {
  * @param array $posts Array of WP_Post objects.
  */
 function wp_queue_posts_for_term_meta_lazyload( $posts ) {
-	$post_type_taxonomies = array();
-	$term_ids             = array();
+	$post_type_taxonomies = $term_ids = array();
 	foreach ( $posts as $post ) {
 		if ( ! ( $post instanceof WP_Post ) ) {
 			continue;

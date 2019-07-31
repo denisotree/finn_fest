@@ -2,6 +2,10 @@
 
 $template_path = get_template_directory_uri();
 
+$frontpage_id = get_option( 'page_on_front' );
+
+$second_logo = CFS()->get('second_logo', $frontpage_id)
+
 ?>
 <!doctype html>
 <html <?php language_attributes(); ?>>
@@ -36,7 +40,7 @@ $template_path = get_template_directory_uri();
 		</div>
 		<div class="container-fluid container-fluid-header-menu">
 			<div class="container">
-				<img src="<?= wp_get_attachment_image_url(get_option('second_logo_image')) ?>" class="hor_logo hide_logo" alt="<?= get_bloginfo('title') ?>">
+				<img src="<?= $second_logo ?>" class="hor_logo hide_logo" alt="<?= get_bloginfo('title') ?>">
 				<div class="header-menu">
 					<button type="button" class="close-mobile">
 						<span class="icon-close mobile-close"></span>
