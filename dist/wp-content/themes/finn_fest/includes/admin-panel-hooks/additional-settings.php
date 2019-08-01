@@ -155,5 +155,5 @@ function order_form_shortcode_field()
 function footer_banner_text_field()
 {
     $text= get_option('footer_banner_text');
-    wp_editor($text, 'terms_wp_content', $settings = ['textarea_name'=>'footer_banner_text']);
+    wp_editor($text, 'terms_wp_content', $settings = ['textarea_name'=>'footer_banner_text', 'wpautop'=>false]);
 }

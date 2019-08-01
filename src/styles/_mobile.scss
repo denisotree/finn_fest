@@ -85,11 +85,7 @@
 	}
 
 	.content-block__text-left {
-		-webkit-box-orient: vertical;
-		-webkit-box-direction: normal;
-		-ms-flex-direction: column;
-		-webkit-flex-direction: column;
-		flex-direction: column;
+		flex-direction: column-reverse;
 		padding: 0;
 		width: 100%;
 		margin: 40px auto;
@@ -185,15 +181,6 @@
 	.container__social-info .social-info__about-us {
 		width: 100%;
 		padding: 0 15px
-	}
-
-	.container-fluid__festivalvideo {
-		width: 100%;
-		height: 355px
-	}
-
-	.container__festival-video {
-		padding: 0
 	}
 
 	.header-video {
@@ -552,11 +539,6 @@
 		padding: 0 15px
 	}
 
-	.container-fluid__festivalvideo {
-		width: 100%;
-		height: 355px
-	}
-
 	.container__festival-video {
 		padding: 0
 	}
@@ -853,12 +835,6 @@
         background-size: cover
     }
 
-    .modal-content__video {
-        margin-top: 20%;
-        width: auto;
-        height: 270px
-    }
-
     .active-menu .close-mobile {
         position: absolute;
         z-index: 3;
@@ -885,10 +861,6 @@
 
     .modal-body__form, .modal-body__form:active, .modal-body__form:focus, .modal-body__form:hover {
         outline: none
-    }
-
-    .container-fluid__festivalvideo {
-        height: 350px
     }
 
     .owl-carousel .myitem a > img {
@@ -918,12 +890,6 @@
         background-image: url(../img/banner3.jpg?v=1.2.3);
         -webkit-background-size: cover;
         background-size: cover
-    }
-
-    .modal-content__video {
-        margin-top: 20%;
-        width: auto;
-        height: 270px
     }
 
     .active-menu .close-mobile {

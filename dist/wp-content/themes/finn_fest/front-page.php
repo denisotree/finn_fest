@@ -31,9 +31,7 @@ get_component('components/content-welcome-banner', [
 
 get_component('components/content-infoblocks-loop.php', [
 	'query_args' => [
-		'post_type' => 'infoblocks',
-		'order' => 'ASC',
-		'orderby' => 'date'
+		'post_type' => 'infoblocks'
 	]
 ]);
 

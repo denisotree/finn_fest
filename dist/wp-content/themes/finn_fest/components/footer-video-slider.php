@@ -28,7 +28,7 @@ if (!is_null($footer_video_slider)) {
 			</div>
 			<?php foreach($footer_video_slider as $i => $slide) {?>
 				<div class="modal" id="modal-video<?= $i ?>">
-					<div class="modal-dialog modal-dialog__video">
+					<div class="modal-dialog modal-dialog-centered modal-dialog__video">
 						<div class="modal-content modal-content__video">
 							<div class="modal-body">
 								<iframe class="embed-responsive-item" src="" id="video<?= $i ?>"  frameborder="0" gesture="media" allowfullscreen allow="autoplay"></iframe>
