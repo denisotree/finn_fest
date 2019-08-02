@@ -39,6 +39,28 @@ body {
     -moz-osx-font-smoothing: grayscale
 }
 
+.image__wrapper {
+    position: relative;
+    display: block;
+    width: 100%;
+    &::before {
+        content: '';
+        display: block;
+        padding-bottom: 100%;
+    }
+}
+
+.cover__image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    -webkit-background-size: cover!important;
+    background-size: cover!important;
+}
+
 .header-menu__list button, .toggle-nav {
     display: none
 }

@@ -14,7 +14,9 @@ if (!is_null($footer_photo_slider)) {
 			<?php foreach($footer_photo_slider as $slide) {?>
 				<div class="item">
 					<a href="<?= $slide['slide_img'] ?>" data-lightbox="photos-gallery">
-						<img src="<?= $slide['slide_preview'] ?>" alt="<?= $footer_photo_slider_title ?>">
+						<div class="image__wrapper">
+							<img class="cover__image" src="<?= $slide['slide_img'] ?>" alt="<?= $footer_photo_slider_title ?>">
+						</div>
 					</a>
 				</div>
 			<?php } ?>
