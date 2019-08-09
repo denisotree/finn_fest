@@ -144,12 +144,12 @@ function vk_fest_page_id_field()
 
 function order_form_shortcode_field()
 {
-    echo '<input 
-    name="order_form_shortcode"  
-    type="text" 
-    value="' . get_option('order_form_shortcode') . '" 
+    echo '<textarea 
+    name="order_form_shortcode"
     class="code2"
-    />';
+        rows="8"
+    class="code2"
+    />' . get_option('order_form_shortcode') . '</textarea>';
 }
 
 function footer_banner_text_field()
